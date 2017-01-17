@@ -2,19 +2,44 @@ language: cpp
 sudo: required
 dist: trusty
 
+os:
+  - linux
+
+compiler:
+  - gcc
+
 
 install:
+  ############################################################################
+  # Install GCC 4.9
+  ############################################################################
   - |
+    # Install GCC
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt-get -qq update
+      sudo apt-get -qq install gcc-4.9 g++-4.9
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+      sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
+    fi
+
+  ############################################################################
+  # Install Qt5.7
+  ############################################################################
+  - |
+    # Install Qt
     sudo apt-add-repository -y ppa:beineri/opt-qt57-trusty
     sudo apt-get -qq update
     sudo apt-get -qq install qt57tools qt57websockets mesa-common-dev
     export QTDIR="/opt/qt57"
     export PATH="$QTDIR/bin:$PATH"
     qt57-env.sh
+    which qmake
 
 before_script: cd server
   
 script:
+  - which qmake
   - qmake -project
   - qmake server.pro
   - make
