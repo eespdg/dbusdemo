@@ -4,13 +4,13 @@ dist: trusty
 
 
 install:
-      sudo apt-add-repository -y ppa:beineri/opt-qt57-trusty
-      sudo apt-get -qq update
-      sudo apt-get -qq install qt57tools qt57websockets mesa-common-dev
-      
-      export QTDIR="/opt/qt57"
-      export PATH="$QTDIR/bin:$PATH"
-      qt57-env.sh
+  - |
+    sudo apt-add-repository -y ppa:beineri/opt-qt57-trusty
+    sudo apt-get -qq update
+    sudo apt-get -qq install qt57tools qt57websockets mesa-common-dev
+    export QTDIR="/opt/qt57"
+    export PATH="$QTDIR/bin:$PATH"
+    qt57-env.sh
 
 before_script: cd server
   
