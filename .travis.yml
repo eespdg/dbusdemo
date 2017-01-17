@@ -1,0 +1,10 @@
+install:
+  - sudo apt-get update
+  - sudo apt-get install libqt4-dev qt4-qmake
+
+before_script: cd server
+  
+script:
+  - qmake -project
+  - qmake server.pro
+  - make
