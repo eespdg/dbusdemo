@@ -2,6 +2,8 @@
 #define SERVERMAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtDBus/QDBusServer>
+#include <QtDBus/QDBusConnection>
 
 namespace Ui {
 class ServerMainWindow;
@@ -15,8 +17,12 @@ public:
     explicit ServerMainWindow(QWidget *parent = 0);
     ~ServerMainWindow();
 
+private Q_SLOTS:
+    void handleClientConnection(QDBusConnection connection);
+
 private:
     Ui::ServerMainWindow *ui;
+    QDBusServer* m_dBusServer;
 };
 
 #endif // SERVERMAINWINDOW_H
