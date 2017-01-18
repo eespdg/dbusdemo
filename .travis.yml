@@ -17,6 +17,7 @@ before_install:
 
 before_script:
   - cd server
+  - which qmake
 
 script:
   - qmake -project
