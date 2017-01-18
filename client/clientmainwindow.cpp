@@ -39,7 +39,7 @@ void ClientMainWindow::tryConnect()
     else
     {
         qDebug() << "Connected!";
-        m_watcher.reset(new QDBusServiceWatcher("Servis", m_connection, QDBusServiceWatcher::WatchForOwnerChange, Q_NULLPTR));
+        m_watcher.reset(new QDBusServiceWatcher("", m_connection, QDBusServiceWatcher::WatchForOwnerChange, Q_NULLPTR));
         connect(m_watcher.data(), &QDBusServiceWatcher::serviceRegistered, this, &ClientMainWindow::handleServiceRegistration);
     }
 }
