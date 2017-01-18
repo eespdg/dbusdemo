@@ -1,3 +1,14 @@
+language: cpp
+sudo: required
+dist: trusty
+
+os:
+  - linux
+
+compiler:
+  - gcc
+
+
 before_install:
   - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
   - sudo apt-get update -qq
@@ -9,19 +20,10 @@ before_script:
 
 script:
   - qmake -project
-  - qmake Ultron.pro
+  - qmake server.pro
   - make
  
 
-#language: cpp
-#sudo: required
-#dist: trusty
-
-#os:
-#  - linux
-
-#compiler:
-#  - gcc
 
 
 #install:
