@@ -24,6 +24,8 @@ private Q_SLOTS:
 
     void on_btnAccelerate_clicked();
 
+    void on_btnDecelerate_clicked();
+
 private:
     Ui::ClientMainWindow *ui;
     QDBusConnection m_connection;

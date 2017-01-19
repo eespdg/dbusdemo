@@ -29,18 +29,20 @@ void ClientMainWindow::handleServiceRegistration(const QString &serviceName)
 
 void ClientMainWindow::tryConnect()
 {
-    m_connection = QDBusConnection::connectToPeer("tcp:host=127.0.0.1,port=55555", "Domagoj");
-    if (!m_connection.isConnected())
+    QDBusConnection con = QDBusConnection::connectToPeer("tcp:host=127.0.0.1,port=55555", "Domagoj");
+    if (!con.isConnected())
     {
-        QDBusError lastError = m_connection.lastError();
+        QDBusError lastError = con.lastError();
         qDebug() << lastError.message();
 
-        QDBusConnection::disconnectFromBus(m_connection.name());
+        qDebug() << "connection name:" << con.name();
+        QDBusConnection::disconnectFromPeer(con.name());
         qDebug() << "Waiting for dbus to be available...";
         QTimer::singleShot(1000, this, &ClientMainWindow::tryConnect);
     }
     else
     {
+        m_connection = con;
         qDebug() << "Connected!";
 
         m_car = new org::example::Examples::CarInterface("", "/Car",
@@ -52,5 +54,16 @@ void ClientMainWindow::tryConnect()
 
 void ClientMainWindow::on_btnAccelerate_clicked()
 {
-//    QDBusPendingReply reply = m_car->accelerate();
+    if (m_car)
+    {
+        auto reply = m_car->accelerate();
+    }
+}
+
+void ClientMainWindow::on_btnDecelerate_clicked()
+{
+    if (m_car)
+    {
+        auto reply = m_car->decelerate();
+    }
 }

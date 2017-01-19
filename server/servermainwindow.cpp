@@ -4,6 +4,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusError>
 #include <QDebug>
+#include <QMessageBox>
 
 ServerMainWindow::ServerMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -22,11 +23,15 @@ ServerMainWindow::ServerMainWindow(QWidget *parent) :
     ui->graphicsView->setBackgroundBrush(Qt::darkGray);
 
     m_dBusServer = new QDBusServer(QLatin1String("tcp:host=127.0.0.1,port=55555"), this);
+    if (!m_dBusServer->isConnected())
+    {
+        // in windows
+        qDebug() << m_dBusServer->lastError().message();
+        QMessageBox::critical(this, "D-Bus Server application", "D-Bus Server cannot be started!");
+        exit(1);
+    }
     m_dBusServer->setAnonymousAuthenticationAllowed(true);
     connect(m_dBusServer, &QDBusServer::newConnection, this, &ServerMainWindow::handleClientConnection);
-
-    QDBusError lastError = m_dBusServer->lastError();
-    qDebug() << lastError.message();
 }
 
 ServerMainWindow::~ServerMainWindow()

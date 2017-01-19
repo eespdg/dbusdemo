@@ -33,4 +33,4 @@ DDIR = $$DESTDIR
 # Replace slashes in paths with backslashes for Windows
 win32:SRCFILE ~= s,/,\\,g
 win32:DDIR ~= s,/,\\,g
-QMAKE_POST_LINK += $$QMAKE_COPY $$SRCFILE $$DESTDIR
+win32:QMAKE_POST_LINK += $$QMAKE_COPY .

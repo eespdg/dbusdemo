@@ -26,5 +26,5 @@ DBusSession::DBusSession(const QDBusConnection &connection, Car* car, QObject *p
 
 void DBusSession::dump()
 {
-    qDebug() << "Name" << m_connection.name();
+//    qDebug() << "Name" << m_connection.name();
 }
