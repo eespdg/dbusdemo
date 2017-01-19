@@ -9,8 +9,11 @@ ClientMainWindow::ClientMainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ClientMainWindow)
     , m_connection("Domagoj")
+    , m_car(Q_NULLPTR)
 {
     ui->setupUi(this);
+
+
     QTimer::singleShot(0, this, &ClientMainWindow::tryConnect);
 }
 
@@ -39,7 +42,15 @@ void ClientMainWindow::tryConnect()
     else
     {
         qDebug() << "Connected!";
+
+        m_car = new org::example::Examples::CarInterface("", "/Car",
+                               m_connection, this);
         m_watcher.reset(new QDBusServiceWatcher("", m_connection, QDBusServiceWatcher::WatchForOwnerChange, Q_NULLPTR));
         connect(m_watcher.data(), &QDBusServiceWatcher::serviceRegistered, this, &ClientMainWindow::handleServiceRegistration);
     }
+}
+
+void ClientMainWindow::on_btnAccelerate_clicked()
+{
+//    QDBusPendingReply reply = m_car->accelerate();
 }

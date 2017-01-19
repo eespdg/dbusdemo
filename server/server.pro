@@ -11,12 +11,26 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = server
 TEMPLATE = app
 
+INCLUDEPATH += ../common
 
-SOURCES += main.cpp\
-        servermainwindow.cpp \
-    dbussession.cpp
+DBUS_ADAPTORS += ../common/car.xml
 
-HEADERS  += servermainwindow.h \
-    dbussession.h
+SOURCES += \
+    main.cpp\
+    servermainwindow.cpp \
+    dbussession.cpp \
+    car.cpp
+
+HEADERS  += \
+    servermainwindow.h \
+    dbussession.h \
+    car.h
 
 FORMS    += servermainwindow.ui
+
+SRCFILE = $$PWD/../lib/dbus-1.dll
+DDIR = $$DESTDIR
+# Replace slashes in paths with backslashes for Windows
+win32:SRCFILE ~= s,/,\\,g
+win32:DDIR ~= s,/,\\,g
+QMAKE_POST_LINK += $$QMAKE_COPY $$SRCFILE $$DESTDIR

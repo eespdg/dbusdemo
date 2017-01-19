@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = client
 TEMPLATE = app
 
+DBUS_INTERFACES += ../common/car.xml
+
 
 SOURCES += main.cpp\
         clientmainwindow.cpp

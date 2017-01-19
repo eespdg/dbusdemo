@@ -1,9 +1,12 @@
 #ifndef SERVERMAINWINDOW_H
 #define SERVERMAINWINDOW_H
 
+#include "car.h"
+#include "dbussession.h"
 #include <QMainWindow>
 #include <QtDBus/QDBusServer>
 #include <QtDBus/QDBusConnection>
+#include <QGraphicsScene>
 
 namespace Ui {
 class ServerMainWindow;
@@ -20,9 +23,14 @@ public:
 private Q_SLOTS:
     void handleClientConnection(QDBusConnection connection);
 
+    void on_dump_clicked();
+
 private:
     Ui::ServerMainWindow *ui;
     QDBusServer* m_dBusServer;
+    QGraphicsScene* m_scene;
+    Car* m_car;
+    DBusSession* m_lastSession;
 };
 
 #endif // SERVERMAINWINDOW_H

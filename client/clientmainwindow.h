@@ -1,6 +1,7 @@
 #ifndef CLIENTMAINWINDOW_H
 #define CLIENTMAINWINDOW_H
 
+#include "car_interface.h"
 #include <QMainWindow>
 #include <QtDBus/QtDBus>
 
@@ -21,12 +22,13 @@ private Q_SLOTS:
     void tryConnect();
 
 
+    void on_btnAccelerate_clicked();
+
 private:
-
-
+    Ui::ClientMainWindow *ui;
     QDBusConnection m_connection;
     QScopedPointer<QDBusServiceWatcher> m_watcher;
-    Ui::ClientMainWindow *ui;
+    org::example::Examples::CarInterface *m_car;
 };
 
 #endif // CLIENTMAINWINDOW_H
