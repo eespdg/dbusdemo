@@ -66,7 +66,7 @@ void ServerMainWindow::handleClientConnection(QDBusConnection connection)
         qDebug() << "Error registering object:" << connection.lastError().message();
     }
 
-    QTimer::singleShot(100, this, &ServerMainWindow::startClientCommunication);
+    QTimer::singleShot(0, this, &ServerMainWindow::startClientCommunication);
 //    QMetaObject::invokeMethod(this, "startClientCommunication", Qt::QueuedConnection);
 }
 
