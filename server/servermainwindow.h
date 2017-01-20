@@ -21,8 +21,10 @@ public:
     ~ServerMainWindow();
 
 private Q_SLOTS:
+    void startDBusServer();
     void handleClientConnection(QDBusConnection connection);
-
+    void startClientCommunication();
+    void showProgress();
     void on_dump_clicked();
 
 private:

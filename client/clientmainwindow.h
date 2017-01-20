@@ -18,19 +18,15 @@ public:
     ~ClientMainWindow();
 
 private Q_SLOTS:
-    void handleServiceRegistration(const QString &serviceName);
-    void tryConnect();
-
-
+    void monitorConnection();
+    void startCommunication();
     void on_btnAccelerate_clicked();
-
     void on_btnDecelerate_clicked();
 
 private:
     Ui::ClientMainWindow *ui;
-    QDBusConnection m_connection;
-    QScopedPointer<QDBusServiceWatcher> m_watcher;
-    org::example::Examples::CarInterface *m_car;
+    QScopedPointer<org::example::Examples::CarInterface> m_car;
+    bool m_connected;
 };
 
 #endif // CLIENTMAINWINDOW_H
