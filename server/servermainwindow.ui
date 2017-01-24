@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>811</width>
-    <height>540</height>
+    <width>436</width>
+    <height>388</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,13 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPlainTextEdit" name="plainTextEdit">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QFrame" name="frame">
       <property name="frameShape">
@@ -25,9 +32,16 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="dump">
+        <widget class="QPushButton" name="btnAccelerate">
          <property name="text">
-          <string>Dump</string>
+          <string>Accelerate</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnDecelerate">
+         <property name="text">
+          <string>Decelerate</string>
          </property>
         </widget>
        </item>
@@ -44,11 +58,11 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox"/>
+       </item>
       </layout>
      </widget>
-    </item>
-    <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
     </item>
     <item>
      <widget class="QProgressBar" name="progressBar"/>

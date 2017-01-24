@@ -8,13 +8,10 @@
 ClientMainWindow::ClientMainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ClientMainWindow)
-    , m_car(Q_NULLPTR)
     , m_connected(false)
 {
     ui->setupUi(this);
-
     ui->statusBar->showMessage("DISCONNECTED");
-
     QTimer::singleShot(0, this, &ClientMainWindow::monitorConnection);
 }
 
@@ -38,7 +35,7 @@ void ClientMainWindow::monitorConnection()
             m_connected = false;
             QDBusConnection::disconnectFromPeer(connectionName);
             qDebug() << "Disconnected from coreservice";
-            m_car.reset();
+            m_vehicle.reset();
             ui->statusBar->showMessage("CONNECTION INTERRUPTED");
         }
     }
@@ -51,10 +48,14 @@ void ClientMainWindow::monitorConnection()
         if (connection.isConnected())
         {
             qDebug() << "Connected to coreservice";
-            m_car.reset(new org::example::Examples::CarInterface("", "/Car", connection, this));
-            connect(m_car.data(), &org::example::Examples::CarInterface::crashed, this, &ClientMainWindow::startCommunication);
             m_connected = true;
             ui->statusBar->showMessage("CONNECTED - starting...");
+
+            m_vehicle.reset(new org::example::VehicleInterface("", "/Vehicle", connection, this));
+            connect(m_vehicle.data(), &org::example::VehicleInterface::objectRegistered, this, &ClientMainWindow::useRemoteObject);
+
+            connection.connect("", "/Status", "com.test.if", "Ready", this, SLOT(useRemoteObject()));
+
         }
         else
         {
@@ -65,37 +66,36 @@ void ClientMainWindow::monitorConnection()
     }
 
     QTimer::singleShot(1000, this, &ClientMainWindow::monitorConnection);
-
 }
 
-void ClientMainWindow::startCommunication()
-{
-    ui->statusBar->showMessage(m_connected ? "CONNECTED - STARTED": "DISCONNECTED");
 
+void ClientMainWindow::useRemoteObject()
+{
+    qDebug() << "Connection name:" << m_vehicle->connection().name();
     if (m_connected)
     {
         // start using the proxy object
-        m_car->accelerate();
+        qDebug() << "Accelerate";
+        m_vehicle->accelerate();
     }
     else
     {
         qWarning() << "I did not expect this to happen!";
     }
-
 }
 
 void ClientMainWindow::on_btnAccelerate_clicked()
 {
-    if (m_car)
+    if (m_vehicle)
     {
-        auto reply = m_car->accelerate();
+        m_vehicle->accelerate();
     }
 }
 
 void ClientMainWindow::on_btnDecelerate_clicked()
 {
-    if (m_car)
+    if (m_vehicle)
     {
-        auto reply = m_car->decelerate();
+        m_vehicle->decelerate();
     }
 }

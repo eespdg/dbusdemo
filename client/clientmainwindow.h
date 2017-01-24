@@ -1,7 +1,7 @@
 #ifndef CLIENTMAINWINDOW_H
 #define CLIENTMAINWINDOW_H
 
-#include "car_interface.h"
+#include "vehicle_interface.h"
 #include <QMainWindow>
 #include <QtDBus/QtDBus>
 
@@ -19,13 +19,13 @@ public:
 
 private Q_SLOTS:
     void monitorConnection();
-    void startCommunication();
+    void useRemoteObject();
     void on_btnAccelerate_clicked();
     void on_btnDecelerate_clicked();
 
 private:
     Ui::ClientMainWindow *ui;
-    QScopedPointer<org::example::Examples::CarInterface> m_car;
+    QScopedPointer<org::example::VehicleInterface> m_vehicle;
     bool m_connected;
 };
 

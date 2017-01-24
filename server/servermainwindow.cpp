@@ -1,33 +1,42 @@
 #include "servermainwindow.h"
 #include "ui_servermainwindow.h"
-#include "dbussession.h"
-#include "car_adaptor.h"
+#include "vehicle_adaptor.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusError>
 #include <QDebug>
 #include <QMessageBox>
 
-ServerMainWindow::ServerMainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::ServerMainWindow),
-    m_scene(new QGraphicsScene(-500, -500, 1000, 1000, this)),
-    m_car(new Car()),
-    m_lastSession(Q_NULLPTR)
+ServerMainWindow::ServerMainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::ServerMainWindow)
+    , m_vehicle(new Vehicle(this))
 {
     ui->setupUi(this);
 
-    m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    m_scene->addItem(m_car);
+    connect(m_vehicle, &Vehicle::speedChanged, ui->spinBox, &QSpinBox::setValue);
+    connect(ui->spinBox, SIGNAL(valueChanged(int)), m_vehicle, SLOT(setSpeed(int)));
 
-    ui->graphicsView->setScene(m_scene);
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->graphicsView->setBackgroundBrush(Qt::darkGray);
-
+    // this shows if the main thread hangs
     QTimer::singleShot(0, this, &ServerMainWindow::showProgress);
 
-    // start the server from event loop
-//    QTimer::singleShot(1000, this, &ServerMainWindow::startDBusServer);
-    QMetaObject::invokeMethod(this, "startDBusServer", Qt::QueuedConnection);
+    // connect our object to D-Bus messaging
+    new VehicleInterfaceAdaptor(m_vehicle);
+
+    // create server for peer-to-peer connection
+    m_dBusServer = new QDBusServer(QLatin1String("tcp:host=127.0.0.1,port=55555"), this);
+    if (!m_dBusServer->isConnected())
+    {
+        // in windows
+        qDebug() << m_dBusServer->lastError().message();
+        QMessageBox::critical(this, "D-Bus Server application", m_dBusServer->lastError().message());
+        exit(1);
+    }
+
+    // skip authentication
+    m_dBusServer->setAnonymousAuthenticationAllowed(true);
+
+    // client connection handler
+    connect(m_dBusServer, &QDBusServer::newConnection, this, &ServerMainWindow::handleClientConnection);
 }
 
 ServerMainWindow::~ServerMainWindow()
@@ -35,46 +44,34 @@ ServerMainWindow::~ServerMainWindow()
     delete ui;
 }
 
-void ServerMainWindow::startDBusServer()
-{
-    new CarInterfaceAdaptor(m_car);
-    m_dBusServer = new QDBusServer(QLatin1String("tcp:host=127.0.0.1,port=55555"), this);
-    if (!m_dBusServer->isConnected())
-    {
-        // in windows
-        qDebug() << m_dBusServer->lastError().message();
-        QMessageBox::critical(this, "D-Bus Server application", "D-Bus Server cannot be started!");
-        exit(1);
-    }
-    m_dBusServer->setAnonymousAuthenticationAllowed(true);
-    connect(m_dBusServer, &QDBusServer::newConnection, this, &ServerMainWindow::handleClientConnection);
-}
 
 void ServerMainWindow::handleClientConnection(QDBusConnection connection)
 {
     qDebug() << "Server: Client connected. Name:" << connection.name() << "Base service:" << connection.baseService();
-//    m_lastSession = new DBusSession(connection, m_car, this);
+    ui->plainTextEdit->appendPlainText(QString("%1 CONNECTED").arg(connection.name()));
 
-//    new CarInterfaceAdaptor(m_car);
+    Vehicle* vehicle = m_vehicle;
+    QTimer::singleShot(5000, [=](){
+        QDBusConnection conn = connection;
+        qDebug() << "Registering Vehicle" << conn.name();
+        if (!conn.isConnected())
+        {
+            qDebug() << "Not connected:" << conn.name();
+            ui->plainTextEdit->appendPlainText(QString("%1 NOT CONNECTED").arg(conn.name()));
+        }
+        else if (!conn.registerObject("/Vehicle", vehicle))
+        {
+            qDebug() << "Error registering object:" << conn.lastError().message();
+            ui->plainTextEdit->appendPlainText(QString("%1 ERROR REGISTERING").arg(conn.name()));
+        }
+        else
+        {
+            ui->plainTextEdit->appendPlainText(QString("%1 REGISTERED").arg(conn.name()));
 
-    // intentional delay before object registration to check
-    // if clients can synchronize well
-//    QThread::msleep(1000);
-
-    if (!connection.registerObject("/Car", m_car))
-    {
-        qDebug() << "Error registering object:" << connection.lastError().message();
-    }
-
-    QTimer::singleShot(100, this, &ServerMainWindow::startClientCommunication);
-//    QMetaObject::invokeMethod(this, "startClientCommunication", Qt::QueuedConnection);
-}
-
-void ServerMainWindow::startClientCommunication()
-{
-    // signal to the client that all the objects are registered now
-    // so it can start caling the methods
-    Q_EMIT m_car->crashed();
+            // notify the client (this client only) that objects have been registered
+            conn.send(QDBusMessage::createSignal("/Status", "com.test.if", "Ready"));
+        }
+    });
 }
 
 void ServerMainWindow::showProgress()
@@ -89,7 +86,12 @@ void ServerMainWindow::showProgress()
     QTimer::singleShot(100, this, &ServerMainWindow::showProgress);
 }
 
-void ServerMainWindow::on_dump_clicked()
+void ServerMainWindow::on_btnAccelerate_clicked()
 {
-    m_lastSession->dump();
+    m_vehicle->accelerate();
+}
+
+void ServerMainWindow::on_btnDecelerate_clicked()
+{
+    m_vehicle->decelerate();
 }

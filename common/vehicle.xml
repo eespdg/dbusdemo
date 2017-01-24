@@ -1,0 +1,18 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.example.VehicleInterface">
+    <signal name="speedChanged">
+      <arg name="speed" type="i" direction="out"/>
+    </signal>
+    <signal name="objectRegistered">
+      <arg name="connectionName" type="s" direction="out"/>
+    </signal>
+    <method name="accelerate">
+    </method>
+    <method name="decelerate">
+    </method>
+    <method name="setSpeed">
+      <arg name="speed" type="i" direction="in"/>
+    </method>
+  </interface>
+</node>
