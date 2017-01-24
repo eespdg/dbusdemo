@@ -1,7 +1,6 @@
 #ifndef SERVERMAINWINDOW_H
 #define SERVERMAINWINDOW_H
 
-#include "car.h"
 #include "vehicle.h"
 #include <QMainWindow>
 #include <QtDBus/QDBusServer>
@@ -28,7 +27,6 @@ private Q_SLOTS:
 private:
     Ui::ServerMainWindow *ui;
     QDBusServer* m_dBusServer;
-    QGraphicsScene* m_scene;
     Vehicle* m_vehicle;
 };
 

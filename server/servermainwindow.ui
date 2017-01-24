@@ -59,7 +59,14 @@
         </spacer>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox"/>
+        <widget class="QSpinBox" name="spinBox">
+         <property name="minimum">
+          <number>-10000000</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
