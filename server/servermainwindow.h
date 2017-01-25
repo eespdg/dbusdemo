@@ -20,6 +20,7 @@ public:
 
 private Q_SLOTS:
     void handleClientConnection(QDBusConnection connection);
+    void registerObjects(QDBusConnection connection);
     void showProgress();
     void on_btnAccelerate_clicked();
     void on_btnDecelerate_clicked();

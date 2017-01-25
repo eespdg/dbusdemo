@@ -50,28 +50,38 @@ void ServerMainWindow::handleClientConnection(QDBusConnection connection)
     qDebug() << "Server: Client connected. Name:" << connection.name() << "Base service:" << connection.baseService();
     ui->plainTextEdit->appendPlainText(QString("%1 CONNECTED").arg(connection.name()));
 
-    Vehicle* vehicle = m_vehicle;
-    QTimer::singleShot(5000, [=](){
-        QDBusConnection conn = connection;
-        qDebug() << "Registering Vehicle" << conn.name();
-        if (!conn.isConnected())
-        {
-            qDebug() << "Not connected:" << conn.name();
-            ui->plainTextEdit->appendPlainText(QString("%1 NOT CONNECTED").arg(conn.name()));
-        }
-        else if (!conn.registerObject("/Vehicle", vehicle))
-        {
-            qDebug() << "Error registering object:" << conn.lastError().message();
-            ui->plainTextEdit->appendPlainText(QString("%1 ERROR REGISTERING").arg(conn.name()));
-        }
-        else
-        {
-            ui->plainTextEdit->appendPlainText(QString("%1 REGISTERED").arg(conn.name()));
+//    QTimer::singleShot(0, [=](){
+//        registerObjects(connection);
+//    });
 
-            // notify the client (this client only) that objects have been registered
-            conn.send(QDBusMessage::createSignal("/Status", "com.test.if", "Ready"));
+    registerObjects(connection);
+}
+
+void ServerMainWindow::registerObjects(QDBusConnection connection)
+{
+    qDebug() << "Registering Vehicle" << connection.name();
+    if (!connection.isConnected())
+    {
+        qDebug() << "Not connected:" << connection.name();
+        ui->plainTextEdit->appendPlainText(QString("%1 NOT CONNECTED").arg(connection.name()));
+    }
+    else if (!connection.registerObject("/Vehicle", m_vehicle))
+    {
+        qDebug() << "Error registering object:" << connection.lastError().message();
+        ui->plainTextEdit->appendPlainText(QString("%1 ERROR REGISTERING").arg(connection.name()));
+    }
+    else
+    {
+        ui->plainTextEdit->appendPlainText(QString("%1 REGISTERED").arg(connection.name()));
+
+        // notify the client (this client only) that objects have been registered
+        if (!connection.send(QDBusMessage::createSignal("/Status", "com.test.if", "Ready")))
+        {
+            ui->plainTextEdit->appendPlainText(QString("%1 Error sending signal: %2")
+                                               .arg(connection.name())
+                                               .arg(connection.lastError().message()));
         }
-    });
+    }
 }
 
 void ServerMainWindow::showProgress()
