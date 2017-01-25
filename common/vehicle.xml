@@ -11,6 +11,9 @@
     </method>
     <method name="decelerate">
     </method>
+    <method name="speed">
+      <arg type="i" direction="out"/>
+    </method>
     <method name="setSpeed">
       <arg name="speed" type="i" direction="in"/>
     </method>

@@ -14,11 +14,11 @@ public:
     Vehicle(QObject* parent = Q_NULLPTR);
 
 public:
-    int speed();
 
 public Q_SLOTS:
     void accelerate();
     void decelerate();
+    int speed();
     void setSpeed(int speed);
 
 Q_SIGNALS:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>569</width>
+    <height>336</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,16 +25,16 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="btnAccelerate">
+        <widget class="QPushButton" name="btnReadSpeed">
          <property name="text">
-          <string>Accelerate</string>
+          <string>Read Speed</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnDecelerate">
+        <widget class="QLabel" name="lblSpeed">
          <property name="text">
-          <string>Decelerate</string>
+          <string>speed</string>
          </property>
         </widget>
        </item>
@@ -52,7 +52,35 @@
         </spacer>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox"/>
+        <widget class="QPushButton" name="btnAccelerate">
+         <property name="text">
+          <string>Accelerate</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnDecelerate">
+         <property name="text">
+          <string>Decelerate</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox">
+         <property name="minimum">
+          <number>-10000000</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSetSpeed">
+         <property name="text">
+          <string>Set Speed</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

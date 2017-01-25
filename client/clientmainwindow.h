@@ -18,15 +18,23 @@ public:
     ~ClientMainWindow();
 
 private Q_SLOTS:
+    void showProgress();
     void monitorConnection();
     void useRemoteObject();
+    void setVehicleSpeed(int value);
     void on_btnAccelerate_clicked();
     void on_btnDecelerate_clicked();
+
+    void on_btnReadSpeed_clicked();
+
+    void on_btnSetSpeed_clicked();
 
 private:
     Ui::ClientMainWindow *ui;
     QScopedPointer<org::example::VehicleInterface> m_vehicle;
     bool m_connected;
+    int m_connectionCounter;
+    int m_lastSetSpeed;
 };
 
 #endif // CLIENTMAINWINDOW_H
