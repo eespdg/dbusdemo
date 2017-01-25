@@ -73,6 +73,7 @@ void ClientMainWindow::monitorConnection()
         QDBusConnection connection = QDBusConnection::connectToPeer(connectionString, connectionName);
         if (connection.isConnected())
         {
+            connection.connect("", "/Status", "com.test.if", "Ready", this, SLOT(useRemoteObject()));
             qDebug() << "Connected to coreservice";
             ui->plainTextEdit->appendPlainText("CONNECTED");
             ui->statusBar->showMessage("CONNECTED");
@@ -82,7 +83,6 @@ void ClientMainWindow::monitorConnection()
             m_vehicle.reset(new org::example::VehicleInterface("", "/Vehicle", connection, this));
 
 //            connect(m_vehicle.data(), &org::example::VehicleInterface::objectRegistered, this, &ClientMainWindow::useRemoteObject);
-            connection.connect("", "/Status", "com.test.if", "Ready", this, SLOT(useRemoteObject()));
 
             connect(m_vehicle.data(), &org::example::VehicleInterface::speedChanged, this->ui->spinBox, &QSpinBox::setValue);
 
