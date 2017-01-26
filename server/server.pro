@@ -26,7 +26,8 @@ SOURCES += \
 HEADERS  += \
     servermainwindow.h \
     vehicle.h \
-    dbusmonitor.h
+    dbusmonitor.h \
+    dbusmonitor_p.h
 
 FORMS    += servermainwindow.ui
 
