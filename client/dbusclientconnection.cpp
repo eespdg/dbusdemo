@@ -83,7 +83,7 @@ void DBusClientConnectionPrivate::connectToServer(const QString &serverAddress, 
     m_serverAddress = serverAddress;
     m_connectionName = connectionName;
     monitorConnection();
-    m_timer->start(10000);
+    m_timer->start(1000);
 }
 
 void DBusClientConnectionPrivate::disconnectFromServer()
