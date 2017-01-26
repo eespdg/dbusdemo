@@ -30,7 +30,6 @@ ServerMainWindow::ServerMainWindow(QWidget *parent)
     m_dBusServer = new QDBusServer(QLatin1String("tcp:host=127.0.0.1,port=55555"), this);
     if (!m_dBusServer->isConnected())
     {
-        // in windows
         qDebug() << m_dBusServer->lastError().message();
         QMessageBox::critical(this, "D-Bus Server application", m_dBusServer->lastError().message());
         exit(1);
