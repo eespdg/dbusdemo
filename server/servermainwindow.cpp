@@ -1,5 +1,6 @@
 #include "servermainwindow.h"
 #include "ui_servermainwindow.h"
+#include "dbusmonitor_adaptor.h"
 #include "vehicle_adaptor.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusError>
@@ -10,6 +11,7 @@ ServerMainWindow::ServerMainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ServerMainWindow)
     , m_vehicle(new Vehicle(this))
+    , m_dBusMonitor()
 {
     ui->setupUi(this);
 
@@ -18,6 +20,8 @@ ServerMainWindow::ServerMainWindow(QWidget *parent)
 
     // this shows if the main thread hangs
     QTimer::singleShot(0, this, &ServerMainWindow::showProgress);
+
+//    new DBusMonitorInterfaceAdaptor(&m_dBusMonitor);
 
     // connect our object to D-Bus messaging
     new VehicleInterfaceAdaptor(m_vehicle);
@@ -50,11 +54,9 @@ void ServerMainWindow::handleClientConnection(QDBusConnection connection)
     qDebug() << "Server: Client connected. Name:" << connection.name() << "Base service:" << connection.baseService();
     ui->plainTextEdit->appendPlainText(QString("%1 CONNECTED").arg(connection.name()));
 
-//    QTimer::singleShot(0, [=](){
-//        registerObjects(connection);
-//    });
-
     registerObjects(connection);
+
+    m_dBusMonitor.registerForConnection(connection);
 }
 
 void ServerMainWindow::registerObjects(QDBusConnection connection)

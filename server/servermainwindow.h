@@ -2,6 +2,7 @@
 #define SERVERMAINWINDOW_H
 
 #include "vehicle.h"
+#include "dbusmonitor.h"
 #include <QMainWindow>
 #include <QtDBus/QDBusServer>
 #include <QtDBus/QDBusConnection>
@@ -29,6 +30,7 @@ private:
     Ui::ServerMainWindow *ui;
     QDBusServer* m_dBusServer;
     Vehicle* m_vehicle;
+    DBusMonitor m_dBusMonitor;
 };
 
 #endif // SERVERMAINWINDOW_H

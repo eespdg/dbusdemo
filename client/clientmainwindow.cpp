@@ -8,19 +8,26 @@
 ClientMainWindow::ClientMainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ClientMainWindow)
-    , m_connected(false)
     , m_connectionCounter(0)
     , m_lastSetSpeed(0)
 {
     ui->setupUi(this);
 
-//    connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(setVehicleSpeed(int)));
-
     // this shows if the main thread hangs
     QTimer::singleShot(0, this, &ClientMainWindow::showProgress);
 
-    ui->statusBar->showMessage("DISCONNECTED");
-    QTimer::singleShot(0, this, &ClientMainWindow::monitorConnection);
+    handleDisconnection();
+
+    // 1. connect the signals
+    connect(&m_connection, &DBusClientConnection::connectedToServer,
+            this, &ClientMainWindow::handleConnection);
+    connect(&m_connection, &DBusClientConnection::disconnectedFromServer,
+            this, &ClientMainWindow::handleDisconnection);
+    connect(&m_connection, &DBusClientConnection::heartBeat,
+            this, &ClientMainWindow::showTicks);
+
+    // 2. initiate connection to server
+    m_connection.connectToServer("tcp:host=127.0.0.1,port=55555", "core");
 }
 
 ClientMainWindow::~ClientMainWindow()
@@ -40,84 +47,27 @@ void ClientMainWindow::showProgress()
     QTimer::singleShot(100, this, &ClientMainWindow::showProgress);
 }
 
-void ClientMainWindow::monitorConnection()
+void ClientMainWindow::handleConnection(QDBusConnection connection)
 {
-    static const QString connectionName("coreservice");
+    qDebug() << "Connection name:" << connection.name();
+    ui->plainTextEdit->appendPlainText("REGISTERED");
+    ui->statusBar->showMessage("REGISTERED");
+    ui->plainTextEdit->setStyleSheet("background-color: rgb(255, 255, 255);");
 
-    // check the current connection
-    if (m_connected)
-    {
-        // retrieve connection by name
-        QDBusConnection connection(connectionName);
-        if (!connection.isConnected())
-        {
-            qDebug() << connection.lastError().message();
-            m_connected = false;
-            QDBusConnection::disconnectFromPeer(connectionName);
-            qDebug() << "Disconnected from coreservice";
-            ui->plainTextEdit->appendPlainText("DISCONNECTED");
-            ui->statusBar->showMessage("DISCONNECTED");
-            m_vehicle.reset();
-        }
-    }
+    // create proxy object
+    m_vehicle.reset(new org::example::VehicleInterface("", "/Vehicle", connection, this));
+    connect(m_vehicle.data(), &org::example::VehicleInterface::speedChanged, this->ui->spinBox, &QSpinBox::setValue);
 
-    // try to connect
-    if (!m_connected)
-    {
-        // try to establish the connection
-        const QString connectionString("tcp:host=127.0.0.1,port=55555");
-        ui->plainTextEdit->appendPlainText(QString("[%1] CONNECTING TO: %2 ...").arg(++m_connectionCounter).arg(connectionString));
-        ui->plainTextEdit->repaint();
-        ui->statusBar->showMessage("CONNECTING");
-        ui->statusBar->repaint();
-        QDBusConnection connection = QDBusConnection::connectToPeer(connectionString, connectionName);
-        if (connection.isConnected())
-        {
-            connection.connect("", "/Status", "com.test.if", "Ready", this, SLOT(useRemoteObject()));
-            qDebug() << "Connected to coreservice";
-            ui->plainTextEdit->appendPlainText("CONNECTED");
-            ui->statusBar->showMessage("CONNECTED");
-            m_connected = true;
-
-            // create proxy
-            m_vehicle.reset(new org::example::VehicleInterface("", "/Vehicle", connection, this));
-
-//            connect(m_vehicle.data(), &org::example::VehicleInterface::objectRegistered, this, &ClientMainWindow::useRemoteObject);
-
-            connect(m_vehicle.data(), &org::example::VehicleInterface::speedChanged, this->ui->spinBox, &QSpinBox::setValue);
-
-
-        }
-        else
-        {
-            qDebug() << connection.lastError().message();
-            ui->plainTextEdit->appendPlainText("CONNECTION ERROR: " + connection.lastError().message());
-            ui->statusBar->showMessage("CONNECTION ERROR");
-            QDBusConnection::disconnectFromPeer(connectionName);
-            qDebug() << "Cannot connect to coreservice";
-        }
-    }
-
-    QTimer::singleShot(1000, this, &ClientMainWindow::monitorConnection);
+    // it must be possible to call proxy object immediately
+    on_btnAccelerate_clicked();
 }
 
-
-void ClientMainWindow::useRemoteObject()
+void ClientMainWindow::handleDisconnection()
 {
-    qDebug() << "Connection name:" << m_vehicle->connection().name();
-    if (m_connected)
-    {
-        ui->plainTextEdit->appendPlainText("REGISTERED");
-        ui->statusBar->showMessage("REGISTERED");
-
-        // try to call proxy object
-        on_btnAccelerate_clicked();
-    }
-    else
-    {
-        qWarning() << "I did not expect this to happen!";
-        ui->plainTextEdit->appendPlainText("'Ready' signal received but not connected!");
-    }
+    m_vehicle.reset();
+    ui->plainTextEdit->appendPlainText("DISCONNECTED");
+    ui->statusBar->showMessage("DISCONNECTED");
+    ui->plainTextEdit->setStyleSheet("background-color: rgb(255, 155, 155);");
 }
 
 void ClientMainWindow::setVehicleSpeed(int value)
@@ -139,6 +89,11 @@ void ClientMainWindow::setVehicleSpeed(int value)
             }
         }
     }
+}
+
+void ClientMainWindow::showTicks(qint64 ticks)
+{
+    ui->lblTicks->setText(QString::number(ticks));
 }
 
 void ClientMainWindow::on_btnAccelerate_clicked()

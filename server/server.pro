@@ -13,16 +13,20 @@ TEMPLATE = app
 
 INCLUDEPATH += ../common
 
-DBUS_ADAPTORS += ../common/vehicle.xml
+DBUS_ADAPTORS += \
+    ../common/dbusmonitor.xml \
+    ../common/vehicle.xml
 
 SOURCES += \
     main.cpp\
     servermainwindow.cpp \
-    vehicle.cpp
+    vehicle.cpp \
+    dbusmonitor.cpp
 
 HEADERS  += \
     servermainwindow.h \
-    vehicle.h
+    vehicle.h \
+    dbusmonitor.h
 
 FORMS    += servermainwindow.ui
 

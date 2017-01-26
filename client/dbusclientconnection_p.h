@@ -1,0 +1,38 @@
+#ifndef DBUSCLIENTCONNECTION_P_H
+#define DBUSCLIENTCONNECTION_P_H
+
+#include "dbusclientconnection.h"
+#include "dbusmonitor_interface.h"
+#include <QTimer>
+
+class DBusClientConnectionPrivate : public QObject
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(DBusClientConnectionPrivate)
+
+public:
+    DBusClientConnectionPrivate();
+
+public Q_SLOTS:
+    void connectToServer(const QString &serverAddress, const QString &connectionName);
+    void disconnectFromServer();
+
+private Q_SLOTS:
+    void monitorConnection();
+    void receiveHeartBeat(qint64 milliseconds);
+
+Q_SIGNALS:
+    void connectedToServer(QDBusConnection connection);
+    void disconnectedFromServer(QString connectionName);
+    void heartBeat(qint64 milliseconds);
+
+public:
+    QString m_serverAddress; ///< connection string, e.g. "tcp:host=127.0.0.1,port=55555"
+    QString m_connectionName; ///< unique name for the connection, e.g. "coreservice"
+    bool m_connected; ///< server connection state
+    bool m_ready; ///< ready to communicate to server
+    QTimer* m_timer;
+    com::barco::healthcare::DBusMonitorInterface* m_dBusMonitor;
+};
+
+#endif // DBUSCLIENTCONNECTION_P_H

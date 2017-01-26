@@ -11,13 +11,18 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = client
 TEMPLATE = app
 
-DBUS_INTERFACES += ../common/vehicle.xml
+DBUS_INTERFACES += \
+    ../common/dbusmonitor.xml \
+    ../common/vehicle.xml
 
 
 SOURCES += main.cpp\
-        clientmainwindow.cpp
+        clientmainwindow.cpp \
+    dbusclientconnection.cpp
 
-HEADERS  += clientmainwindow.h
+HEADERS  += clientmainwindow.h \
+    dbusclientconnection.h \
+    dbusclientconnection_p.h
 
 FORMS    += clientmainwindow.ui
 
