@@ -7,18 +7,27 @@
 
 DBusClientConnection::DBusClientConnection(QObject *parent)
     : QObject(parent)
-    , d_ptr(new DBusClientConnectionPrivate())
+    , d_ptr(Q_NULLPTR)
 {
-    connect(d_ptr.data(), &DBusClientConnectionPrivate::connectedToServer,
+    QThread* thread = new QThread(this);
+    d_ptr = new DBusClientConnectionPrivate();
+    d_ptr->moveToThread(thread);
+    connect(thread, &QThread::finished, d_ptr, &DBusClientConnectionPrivate::deleteLater);
+
+    connect(d_ptr, &DBusClientConnectionPrivate::connectedToServer,
             this, &DBusClientConnection::connectedToServer);
-    connect(d_ptr.data(), &DBusClientConnectionPrivate::disconnectedFromServer,
+    connect(d_ptr, &DBusClientConnectionPrivate::disconnectedFromServer,
             this, &DBusClientConnection::disconnectedFromServer);
-    connect(d_ptr.data(), &DBusClientConnectionPrivate::heartBeat,
+    connect(d_ptr, &DBusClientConnectionPrivate::heartBeat,
             this, &DBusClientConnection::heartBeat);
+
+    thread->start();
 }
 
 DBusClientConnection::~DBusClientConnection()
 {
+    d_ptr->thread()->quit();
+    d_ptr->thread()->wait();
 }
 
 QString DBusClientConnection::serverAddress()
@@ -43,7 +52,8 @@ QDBusConnection DBusClientConnection::connection()
 
 void DBusClientConnection::connectToServer(const QString &serverAddress, const QString &connectionName)
 {
-    d_ptr->connectToServer(serverAddress, connectionName);
+    QMetaObject::invokeMethod(d_ptr, "connectToServer", Qt::QueuedConnection, Q_ARG(QString, serverAddress), Q_ARG(QString, connectionName));
+//    d_ptr->connectToServer(serverAddress, connectionName);
 }
 
 void DBusClientConnection::disconnectFromServer()
@@ -51,8 +61,9 @@ void DBusClientConnection::disconnectFromServer()
     d_ptr->disconnectFromServer();
 }
 
-DBusClientConnectionPrivate::DBusClientConnectionPrivate()
-    : m_serverAddress()
+DBusClientConnectionPrivate::DBusClientConnectionPrivate(QObject *parent)
+    : QObject(parent)
+    , m_serverAddress()
     , m_connectionName()
     , m_connected(false)
     , m_ready(false)
@@ -72,7 +83,7 @@ void DBusClientConnectionPrivate::connectToServer(const QString &serverAddress, 
     m_serverAddress = serverAddress;
     m_connectionName = connectionName;
     monitorConnection();
-    m_timer->start(1000);
+    m_timer->start(10000);
 }
 
 void DBusClientConnectionPrivate::disconnectFromServer()
@@ -88,7 +99,7 @@ void DBusClientConnectionPrivate::disconnectFromServer()
     if (m_ready)
     {
         m_ready = false;
-        Q_EMIT disconnectedFromServer(m_connectionName);
+        Q_EMIT disconnectedFromServer();
     }
 }
 
@@ -106,7 +117,7 @@ void DBusClientConnectionPrivate::monitorConnection()
             if (m_ready)
             {
                 m_ready = false;
-                Q_EMIT disconnectedFromServer(m_connectionName);
+                Q_EMIT disconnectedFromServer();
             }
         }
     }
@@ -139,6 +150,6 @@ void DBusClientConnectionPrivate::receiveHeartBeat(qint64 milliseconds)
     if (!m_ready)
     {
         m_ready = true;
-        Q_EMIT connectedToServer(QDBusConnection(m_connectionName));
+        Q_EMIT connectedToServer();
     }
 }

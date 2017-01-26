@@ -47,8 +47,9 @@ void ClientMainWindow::showProgress()
     QTimer::singleShot(100, this, &ClientMainWindow::showProgress);
 }
 
-void ClientMainWindow::handleConnection(QDBusConnection connection)
+void ClientMainWindow::handleConnection()
 {
+    QDBusConnection connection(m_connection.connection());
     qDebug() << "Connection name:" << connection.name();
     ui->plainTextEdit->appendPlainText("REGISTERED");
     ui->statusBar->showMessage("REGISTERED");

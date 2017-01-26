@@ -20,7 +20,7 @@ public:
 
 private Q_SLOTS:
     void showProgress();
-    void handleConnection(QDBusConnection connection);
+    void handleConnection();
     void handleDisconnection();
     void setVehicleSpeed(int value);
     void showTicks(qint64 ticks);

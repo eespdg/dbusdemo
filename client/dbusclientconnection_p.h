@@ -11,7 +11,7 @@ class DBusClientConnectionPrivate : public QObject
     Q_DISABLE_COPY(DBusClientConnectionPrivate)
 
 public:
-    DBusClientConnectionPrivate();
+    DBusClientConnectionPrivate(QObject* parent = Q_NULLPTR);
 
 public Q_SLOTS:
     void connectToServer(const QString &serverAddress, const QString &connectionName);
@@ -22,8 +22,8 @@ private Q_SLOTS:
     void receiveHeartBeat(qint64 milliseconds);
 
 Q_SIGNALS:
-    void connectedToServer(QDBusConnection connection);
-    void disconnectedFromServer(QString connectionName);
+    void connectedToServer();
+    void disconnectedFromServer();
     void heartBeat(qint64 milliseconds);
 
 public:

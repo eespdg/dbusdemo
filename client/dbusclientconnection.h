@@ -26,12 +26,12 @@ public Q_SLOTS:
     void disconnectFromServer();
 
 Q_SIGNALS:
-    void connectedToServer(QDBusConnection connection);
-    void disconnectedFromServer(QString connectionName);
+    void connectedToServer();
+    void disconnectedFromServer();
     void heartBeat(qint64 milliseconds);
 
 private:
-    QScopedPointer<DBusClientConnectionPrivate> d_ptr;
+    DBusClientConnectionPrivate* d_ptr;
 };
 
 #endif // DBUSCLIENTCONNECTION_H
