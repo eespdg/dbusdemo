@@ -21,7 +21,7 @@ ServerMainWindow::ServerMainWindow(QWidget *parent)
     // this shows if the main thread hangs
     QTimer::singleShot(0, this, &ServerMainWindow::showProgress);
 
-//    new DBusMonitorInterfaceAdaptor(&m_dBusMonitor);
+    new DBusMonitorInterfaceAdaptor(&m_dBusMonitor);
 
     // connect our object to D-Bus messaging
     new VehicleInterfaceAdaptor(m_vehicle);
@@ -40,6 +40,20 @@ ServerMainWindow::ServerMainWindow(QWidget *parent)
 
     // client connection handler
     connect(m_dBusServer, &QDBusServer::newConnection, this, &ServerMainWindow::handleClientConnection);
+
+//    // connect to dbus-daemon
+//    QDBusConnection sysCon = QDBusConnection::systemBus();
+//    if (!sysCon.isConnected())
+//    {
+//        qWarning() << "Error connecting to system bus:" << sysCon.lastError().message();
+//        ui->plainTextEdit->appendPlainText(QString("Error connecting to system bus: %1").arg(sysCon.lastError().message()));
+//    }
+//    else
+//    {
+//        sysCon.registerObject("/Vehicle", m_vehicle);
+//        sysCon.registerObject("/DBusMonitor", DBusMonitor::dBusInterfaceName(), &m_dBusMonitor);
+//        sysCon.registerService("com.barco.healthcare.drive");
+//    }
 }
 
 ServerMainWindow::~ServerMainWindow()

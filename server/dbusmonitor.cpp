@@ -32,6 +32,11 @@ DBusMonitor::~DBusMonitor()
 void DBusMonitor::registerForConnection(QDBusConnection connection)
 {
     connection.registerObject("/DBusMonitor", dBusInterfaceName(), this);
+
+//    // simulate dbus-daemon service registration signal
+//    QDBusMessage message = QDBusMessage::createSignal("/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged");
+//    message.setArguments({QString("com.barco.healthcare.drive"), QString(""), QString(":1.44")});
+//    connection.send(message);
 }
 
 QString DBusMonitor::dBusInterfaceName()

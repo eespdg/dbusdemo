@@ -53,7 +53,13 @@ QDBusConnection DBusClientConnection::connection()
 void DBusClientConnection::connectToServer(const QString &serverAddress, const QString &connectionName)
 {
     QMetaObject::invokeMethod(d_ptr, "connectToServer", Qt::QueuedConnection, Q_ARG(QString, serverAddress), Q_ARG(QString, connectionName));
-//    d_ptr->connectToServer(serverAddress, connectionName);
+}
+
+void DBusClientConnection::connectToBus(QDBusConnection::BusType busType, const QString &connectionName)
+{
+    static int s_reg = qRegisterMetaType<QDBusConnection::BusType>("QDBusConnection::BusType");
+
+    QMetaObject::invokeMethod(d_ptr, "connectToBus", Qt::QueuedConnection, Q_ARG(QDBusConnection::BusType, busType), Q_ARG(QString, connectionName));
 }
 
 void DBusClientConnection::disconnectFromServer()
@@ -63,6 +69,7 @@ void DBusClientConnection::disconnectFromServer()
 
 DBusClientConnectionPrivate::DBusClientConnectionPrivate(QObject *parent)
     : QObject(parent)
+    , m_busType(QDBusConnection::SystemBus)
     , m_serverAddress()
     , m_connectionName()
     , m_connected(false)
@@ -82,6 +89,21 @@ void DBusClientConnectionPrivate::connectToServer(const QString &serverAddress, 
 
     m_serverAddress = serverAddress;
     m_connectionName = connectionName;
+
+    monitorConnection();
+    m_timer->start(1000);
+}
+
+void DBusClientConnectionPrivate::connectToBus(QDBusConnection::BusType busType, const QString &connectionName)
+{
+    disconnectFromServer();
+
+    if (connectionName.isEmpty())
+        return;
+
+    m_busType = busType;
+    m_connectionName = connectionName;
+
     monitorConnection();
     m_timer->start(1000);
 }
@@ -89,22 +111,29 @@ void DBusClientConnectionPrivate::connectToServer(const QString &serverAddress, 
 void DBusClientConnectionPrivate::disconnectFromServer()
 {
     m_timer->stop();
-    if (!m_serverAddress.isEmpty() && !m_connectionName.isEmpty())
+    if (!m_connectionName.isEmpty())
     {
-        QDBusConnection::disconnectFromPeer(m_connectionName);
+        if (m_serverAddress.isEmpty())
+        {
+            QDBusConnection::disconnectFromBus(m_connectionName);
+        }
+        else
+        {
+            QDBusConnection::disconnectFromPeer(m_connectionName);
+        }
     }
     m_serverAddress.clear();
     m_connectionName.clear();
-    m_connected = false;
-    if (m_ready)
-    {
-        m_ready = false;
-        Q_EMIT disconnectedFromServer();
-    }
+    handleDisconnection();
 }
 
 void DBusClientConnectionPrivate::monitorConnection()
 {
+    if (m_connectionName.isEmpty())
+    {
+        return;
+    }
+
     // check the current connection
     if (m_connected)
     {
@@ -113,12 +142,7 @@ void DBusClientConnectionPrivate::monitorConnection()
         if (!connection.isConnected())
         {
             qDebug() << "Disconnected from:" << m_connectionName << connection.lastError().message();
-            m_connected = false;
-            if (m_ready)
-            {
-                m_ready = false;
-                Q_EMIT disconnectedFromServer();
-            }
+            handleDisconnection();
         }
     }
 
@@ -126,7 +150,11 @@ void DBusClientConnectionPrivate::monitorConnection()
     if (!m_connected)
     {
         // try to establish the connection
-        QDBusConnection connection = QDBusConnection::connectToPeer(m_serverAddress, m_connectionName);
+        QDBusConnection connection =
+            m_serverAddress.isEmpty() ?
+                    QDBusConnection::connectToBus(m_busType, m_connectionName) :
+                    QDBusConnection::connectToPeer(m_serverAddress, m_connectionName) ;
+
         if (connection.isConnected())
         {
             qDebug() << "Connected to:" << m_connectionName;
@@ -134,11 +162,30 @@ void DBusClientConnectionPrivate::monitorConnection()
             connect(m_dBusMonitor, &com::barco::healthcare::DBusMonitorInterface::heartBeat,
                     this, &DBusClientConnectionPrivate::receiveHeartBeat);
             m_connected = true;
+
+//            QDBusMessage reply = connection.call(QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames"));
+//            qDebug() << "Reply:" << reply;
+
+//            QDBusServiceWatcher* watcher = new QDBusServiceWatcher("com.barco.healthcare.drive", connection);
+//            connect(watcher, &QDBusServiceWatcher::serviceRegistered, [=](QString serviceName){
+//                qDebug() << "Service registered:" << serviceName;
+//            });
+
+//            connection.connect("", "/org/freedesktop/DBus", "", "NameOwnerChanged", this, SLOT(handleNameOwnerChange(QString, QString, QString)));
+
+//            qDebug() << "Watcher activated";
         }
         else
         {
             qDebug() << "Error connecting to:" << m_connectionName << connection.lastError().message();
-            QDBusConnection::disconnectFromPeer(m_connectionName);
+            if (m_serverAddress.isEmpty())
+            {
+                QDBusConnection::disconnectFromBus(m_connectionName);
+            }
+            else
+            {
+                QDBusConnection::disconnectFromPeer(m_connectionName);
+            }
         }
     }
 }
@@ -151,5 +198,20 @@ void DBusClientConnectionPrivate::receiveHeartBeat(qint64 milliseconds)
     {
         m_ready = true;
         Q_EMIT connectedToServer();
+    }
+}
+
+void DBusClientConnectionPrivate::handleNameOwnerChange(QString service, QString before, QString after)
+{
+    qDebug() << "NameOwnerChange:" << service << before << after;
+}
+
+void DBusClientConnectionPrivate::handleDisconnection()
+{
+    m_connected = false;
+    if (m_ready)
+    {
+        m_ready = false;
+        Q_EMIT disconnectedFromServer();
     }
 }

@@ -23,6 +23,7 @@ public:
 
 public Q_SLOTS:
     void connectToServer(const QString& serverAddress, const QString& connectionName);
+    void connectToBus(QDBusConnection::BusType busType, const QString &connectionName);
     void disconnectFromServer();
 
 Q_SIGNALS:

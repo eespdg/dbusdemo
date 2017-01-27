@@ -28,6 +28,7 @@ ClientMainWindow::ClientMainWindow(QWidget *parent)
 
     // 2. initiate connection to server
     m_connection.connectToServer("tcp:host=127.0.0.1,port=55555", "core");
+//    m_connection.connectToBus(QDBusConnection::SystemBus, "system");
 }
 
 ClientMainWindow::~ClientMainWindow()
