@@ -67,9 +67,13 @@ void ServerMainWindow::handleClientConnection(QDBusConnection connection)
     qDebug() << "Server: Client connected. Name:" << connection.name() << "Base service:" << connection.baseService();
     ui->plainTextEdit->appendPlainText(QString("%1 CONNECTED").arg(connection.name()));
 
-    registerObjects(connection);
+    QTimer::singleShot(5000, this, [=](){
+        registerObjects(connection);
+    });
 
-    m_dBusMonitor.registerForConnection(connection);
+//    registerObjects(connection);
+
+//    m_dBusMonitor.registerForConnection(connection);
 }
 
 void ServerMainWindow::registerObjects(QDBusConnection connection)

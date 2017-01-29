@@ -19,6 +19,8 @@ public:
 private Q_SLOTS:
     void handleConnection();
     void handleDisconnection();
+    void handleObjectAdded();
+    void handleObjectRemoved();
 
 private:
     Ui::DBusConsumer *ui;

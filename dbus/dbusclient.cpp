@@ -6,18 +6,18 @@
 #include <QDBusError>
 #include <QThread>
 
-DBusClient::DBusClient(QObject *parent)
+DBusClient::DBusClient(const QString& connectionName, QObject *parent)
     : QObject(parent)
-    , d_ptr(Q_NULLPTR)
+    , d_ptr(new DBusClientPrivate(connectionName))
 {
+    Q_D(DBusClient);
     QThread* thread = new QThread(this);
-    d_ptr = new DBusClientPrivate();
-    d_ptr->moveToThread(thread);
-    connect(thread, &QThread::finished, d_ptr, &DBusClientPrivate::deleteLater);
+    d->moveToThread(thread);
+    connect(thread, &QThread::finished, d, &DBusClientPrivate::deleteLater);
 
-    connect(d_ptr, &DBusClientPrivate::connectedToServer,
+    connect(d, &DBusClientPrivate::connectedToServer,
             this, &DBusClient::connectedToServer);
-    connect(d_ptr, &DBusClientPrivate::disconnectedFromServer,
+    connect(d, &DBusClientPrivate::disconnectedFromServer,
             this, &DBusClient::disconnectedFromServer);
 
     thread->start();
@@ -49,16 +49,25 @@ QDBusConnection DBusClient::connection()
     return QDBusConnection(d_ptr->m_connectionName);
 }
 
-void DBusClient::connectToServer(const QString &serverAddress, const QString &connectionName)
+DBusObjectWatcher *DBusClient::createObjectWatcher(const QString &objectPath)
 {
-    QMetaObject::invokeMethod(d_ptr, "connectToServer", Qt::QueuedConnection, Q_ARG(QString, serverAddress), Q_ARG(QString, connectionName));
+    Q_D(DBusClient);
+    DBusObjectWatcher* watcher = new DBusObjectWatcher(d->m_connectionName, objectPath, this);
+    connect(this, &DBusClient::connectedToServer, watcher, &DBusObjectWatcher::handleConnection);
+    connect(this, &DBusClient::disconnectedFromServer, watcher, &DBusObjectWatcher::handleDisconnection);
+    return watcher;
 }
 
-void DBusClient::connectToBus(QDBusConnection::BusType busType, const QString &connectionName)
+void DBusClient::connectToServer(const QString &serverAddress)
+{
+    QMetaObject::invokeMethod(d_ptr, "connectToServer", Qt::QueuedConnection, Q_ARG(QString, serverAddress));
+}
+
+void DBusClient::connectToBus(QDBusConnection::BusType busType)
 {
     static int s_reg = qRegisterMetaType<QDBusConnection::BusType>("QDBusConnection::BusType");
 
-    QMetaObject::invokeMethod(d_ptr, "connectToBus", Qt::QueuedConnection, Q_ARG(QDBusConnection::BusType, busType), Q_ARG(QString, connectionName));
+    QMetaObject::invokeMethod(d_ptr, "connectToBus", Qt::QueuedConnection, Q_ARG(QDBusConnection::BusType, busType));
 }
 
 void DBusClient::disconnectFromServer()
@@ -66,40 +75,38 @@ void DBusClient::disconnectFromServer()
     d_ptr->disconnectFromServer();
 }
 
-DBusClientPrivate::DBusClientPrivate(QObject *parent)
+DBusClientPrivate::DBusClientPrivate(const QString &connectionName, QObject *parent)
     : QObject(parent)
     , m_busType(QDBusConnection::SystemBus)
     , m_serverAddress()
-    , m_connectionName()
+    , m_connectionName(connectionName)
+    , m_enabled(false)
     , m_connected(false)
     , m_timer(new QTimer(this))
 {
     connect(m_timer, &QTimer::timeout, this, &DBusClientPrivate::monitorConnection);
 }
 
-void DBusClientPrivate::connectToServer(const QString &serverAddress, const QString &connectionName)
+void DBusClientPrivate::connectToServer(const QString &serverAddress)
 {
     disconnectFromServer();
 
-    if (serverAddress.isEmpty() || connectionName.isEmpty())
+    if (serverAddress.isEmpty())
         return;
 
+    m_enabled = true;
     m_serverAddress = serverAddress;
-    m_connectionName = connectionName;
 
     monitorConnection();
     m_timer->start(1000);
 }
 
-void DBusClientPrivate::connectToBus(QDBusConnection::BusType busType, const QString &connectionName)
+void DBusClientPrivate::connectToBus(QDBusConnection::BusType busType)
 {
     disconnectFromServer();
 
-    if (connectionName.isEmpty())
-        return;
-
+    m_enabled = true;
     m_busType = busType;
-    m_connectionName = connectionName;
 
     monitorConnection();
     m_timer->start(1000);
@@ -108,25 +115,22 @@ void DBusClientPrivate::connectToBus(QDBusConnection::BusType busType, const QSt
 void DBusClientPrivate::disconnectFromServer()
 {
     m_timer->stop();
-    if (!m_connectionName.isEmpty())
+    m_enabled = false;
+    if (m_serverAddress.isEmpty())
     {
-        if (m_serverAddress.isEmpty())
-        {
-            QDBusConnection::disconnectFromBus(m_connectionName);
-        }
-        else
-        {
-            QDBusConnection::disconnectFromPeer(m_connectionName);
-        }
+        QDBusConnection::disconnectFromBus(m_connectionName);
+    }
+    else
+    {
+        QDBusConnection::disconnectFromPeer(m_connectionName);
     }
     m_serverAddress.clear();
-    m_connectionName.clear();
     handleDisconnection();
 }
 
 void DBusClientPrivate::monitorConnection()
 {
-    if (m_connectionName.isEmpty())
+    if (!m_enabled || m_connectionName.isEmpty())
     {
         return;
     }
@@ -175,6 +179,15 @@ void DBusClientPrivate::monitorConnection()
 
 void DBusClientPrivate::handleDisconnection()
 {
+    if (m_serverAddress.isEmpty())
+    {
+        QDBusConnection::disconnectFromBus(m_connectionName);
+    }
+    else
+    {
+        QDBusConnection::disconnectFromPeer(m_connectionName);
+    }
+
     if (m_connected)
     {
         m_connected = false;

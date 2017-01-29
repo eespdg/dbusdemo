@@ -26,12 +26,15 @@ INCLUDEPATH += ../dbus
 
 SOURCES += main.cpp\
     dbusconsumer.cpp \
-    ../dbus/dbusclient.cpp
+    ../dbus/dbusclient.cpp \
+    ../dbus/dbusobjectwatcher.cpp
 
 HEADERS  += \
     dbusconsumer.h \
     ../dbus/dbusclient.h \
-    ../dbus/dbusclient_p.h
+    ../dbus/dbusclient_p.h \
+    ../dbus/dbusobjectwatcher.h \
+    ../dbus/dbusobjectwatcher_p.h
 
 FORMS    += dbusconsumer.ui
 
