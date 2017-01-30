@@ -58,15 +58,19 @@ DBusObjectWatcher *DBusClient::createObjectWatcher(const QString &objectPath)
     return watcher;
 }
 
-void DBusClient::connectToServer(const QString &serverAddress)
+void DBusClient::connectToPeer(const QString &serverAddress)
 {
-    QMetaObject::invokeMethod(d_ptr, "connectToServer", Qt::QueuedConnection, Q_ARG(QString, serverAddress));
+    QMetaObject::invokeMethod(d_ptr, "connectToPeer", Qt::QueuedConnection, Q_ARG(QString, serverAddress));
+}
+
+void DBusClient::connectToBus(const QString &serverAddress)
+{
+    QMetaObject::invokeMethod(d_ptr, "connectToBus", Qt::QueuedConnection, Q_ARG(QString, serverAddress));
 }
 
 void DBusClient::connectToBus(QDBusConnection::BusType busType)
 {
     static int s_reg = qRegisterMetaType<QDBusConnection::BusType>("QDBusConnection::BusType");
-
     QMetaObject::invokeMethod(d_ptr, "connectToBus", Qt::QueuedConnection, Q_ARG(QDBusConnection::BusType, busType));
 }
 
@@ -80,6 +84,7 @@ DBusClientPrivate::DBusClientPrivate(const QString &connectionName, QObject *par
     , m_busType(QDBusConnection::SystemBus)
     , m_serverAddress()
     , m_connectionName(connectionName)
+    , m_connectToPeer(false)
     , m_enabled(false)
     , m_connected(false)
     , m_timer(new QTimer(this))
@@ -87,7 +92,7 @@ DBusClientPrivate::DBusClientPrivate(const QString &connectionName, QObject *par
     connect(m_timer, &QTimer::timeout, this, &DBusClientPrivate::monitorConnection);
 }
 
-void DBusClientPrivate::connectToServer(const QString &serverAddress)
+void DBusClientPrivate::connectToPeer(const QString &serverAddress)
 {
     disconnectFromServer();
 
@@ -95,7 +100,20 @@ void DBusClientPrivate::connectToServer(const QString &serverAddress)
         return;
 
     m_enabled = true;
+    m_connectToPeer = true;
     m_serverAddress = serverAddress;
+
+    monitorConnection();
+    m_timer->start(1000);
+}
+
+void DBusClientPrivate::connectToBus(const QString &serverAddress)
+{
+    disconnectFromServer();
+
+    m_enabled = true;
+    m_connectToPeer = false;
+    m_serverAddress= serverAddress;
 
     monitorConnection();
     m_timer->start(1000);
@@ -106,6 +124,7 @@ void DBusClientPrivate::connectToBus(QDBusConnection::BusType busType)
     disconnectFromServer();
 
     m_enabled = true;
+    m_connectToPeer = false;
     m_busType = busType;
 
     monitorConnection();
@@ -116,13 +135,13 @@ void DBusClientPrivate::disconnectFromServer()
 {
     m_timer->stop();
     m_enabled = false;
-    if (m_serverAddress.isEmpty())
+    if (m_connectToPeer)
     {
-        QDBusConnection::disconnectFromBus(m_connectionName);
+        QDBusConnection::disconnectFromPeer(m_connectionName);
     }
     else
     {
-        QDBusConnection::disconnectFromPeer(m_connectionName);
+        QDBusConnection::disconnectFromBus(m_connectionName);
     }
     m_serverAddress.clear();
     handleDisconnection();
@@ -152,9 +171,11 @@ void DBusClientPrivate::monitorConnection()
     {
         // try to establish the connection
         QDBusConnection connection =
+            m_connectToPeer ?
+            QDBusConnection::connectToPeer(m_serverAddress, m_connectionName) :
             m_serverAddress.isEmpty() ?
-                    QDBusConnection::connectToBus(m_busType, m_connectionName) :
-                    QDBusConnection::connectToPeer(m_serverAddress, m_connectionName) ;
+            QDBusConnection::connectToBus(m_busType, m_connectionName) :
+            QDBusConnection::connectToBus(m_serverAddress, m_connectionName) ;
 
         if (connection.isConnected())
         {
@@ -165,13 +186,13 @@ void DBusClientPrivate::monitorConnection()
         else
         {
             qDebug() << "Error connecting to:" << m_connectionName << connection.lastError().message();
-            if (m_serverAddress.isEmpty())
+            if (m_connectToPeer)
             {
-                QDBusConnection::disconnectFromBus(m_connectionName);
+                QDBusConnection::disconnectFromPeer(m_connectionName);
             }
             else
             {
-                QDBusConnection::disconnectFromPeer(m_connectionName);
+                QDBusConnection::disconnectFromBus(m_connectionName);
             }
         }
     }
@@ -179,13 +200,13 @@ void DBusClientPrivate::monitorConnection()
 
 void DBusClientPrivate::handleDisconnection()
 {
-    if (m_serverAddress.isEmpty())
+    if (m_connectToPeer)
     {
-        QDBusConnection::disconnectFromBus(m_connectionName);
+        QDBusConnection::disconnectFromPeer(m_connectionName);
     }
     else
     {
-        QDBusConnection::disconnectFromPeer(m_connectionName);
+        QDBusConnection::disconnectFromBus(m_connectionName);
     }
 
     if (m_connected)

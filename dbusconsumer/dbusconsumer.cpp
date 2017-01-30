@@ -16,7 +16,7 @@ DBusConsumer::DBusConsumer(QWidget *parent)
     connect(vehicleWatcher, &DBusObjectWatcher::objectRemoved, this, &DBusConsumer::handleObjectRemoved);
     vehicleWatcher->startWatching();
 
-    m_client->connectToServer("tcp:host=127.0.0.1,port=55555");
+    m_client->connectToPeer("tcp:host=127.0.0.1,port=55555");
 }
 
 DBusConsumer::~DBusConsumer()

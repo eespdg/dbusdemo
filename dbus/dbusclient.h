@@ -24,7 +24,8 @@ public:
     DBusObjectWatcher* createObjectWatcher(const QString& objectPath);
 
 public Q_SLOTS:
-    void connectToServer(const QString& serverAddress);
+    void connectToPeer(const QString& serverAddress);
+    void connectToBus(const QString& serverAddress);
     void connectToBus(QDBusConnection::BusType busType);
     void disconnectFromServer();
 
