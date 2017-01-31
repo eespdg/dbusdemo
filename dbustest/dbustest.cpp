@@ -7,7 +7,7 @@ DBusTest::DBusTest(QWidget *parent)
     , ui(new Ui::DBusTest)
     , m_client(new DBusClient("core", this))
     , m_watcher(Q_NULLPTR)
-    , m_serviceWatcher(Q_NULLPTR)
+//    , m_serviceWatcher(Q_NULLPTR)
     , m_server(Q_NULLPTR)
     , m_vehicle(new Vehicle(this))
 {
@@ -30,7 +30,7 @@ void DBusTest::handleServerConnection(QDBusConnection connection)
     if (ui->cbProvide->isChecked())
     {
         connection.registerObject(ui->txtProvPath->text(), m_vehicle);
-        connection.registerService("com.barco.healthcare.driving");
+        connection.registerService(ui->txtProvService->text());
     }
 }
 
@@ -42,7 +42,7 @@ void DBusTest::handleClientConnection()
     {
         QDBusConnection connection = m_client->connection();
         connection.registerObject(ui->txtProvPath->text(), m_vehicle);
-        connection.registerService("com.barco.healthcare.driving");
+        connection.registerService(ui->txtProvService->text());
     }
 
 //    m_serviceWatcher = new QDBusServiceWatcher("com.barco.healthcare.driving", m_client->connection());
@@ -135,7 +135,7 @@ void DBusTest::disconnect()
 void DBusTest::addWatcher()
 {
     deleteWatcher();
-    m_watcher = m_client->createObjectWatcher(ui->txtConsPath->text());
+    m_watcher = m_client->createObjectWatcher(ui->txtConsService->text(), ui->txtConsPath->text());
     connect(m_watcher, &DBusObjectWatcher::objectAdded, this, &DBusTest::handleObjectAdded);
     connect(m_watcher, &DBusObjectWatcher::objectRemoved, this, &DBusTest::handleObjectRemoved);
     m_watcher->startWatching();

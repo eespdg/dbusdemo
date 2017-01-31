@@ -21,7 +21,7 @@ public:
     QString connectionName();
     bool isConnected();
     QDBusConnection connection();
-    DBusObjectWatcher* createObjectWatcher(const QString& objectPath);
+    DBusObjectWatcher* createObjectWatcher(const QString &serviceName, const QString& objectPath);
 
 public Q_SLOTS:
     void connectToPeer(const QString& serverAddress);

@@ -14,7 +14,7 @@ class DBusObjectWatcher : public QObject
     Q_DECLARE_PRIVATE(DBusObjectWatcher)
 
 public:
-    explicit DBusObjectWatcher(const QString& connectionName, const QString& objectPath, QObject *parent = 0);
+    explicit DBusObjectWatcher(const QString& connectionName, const QString& serviceName, const QString& objectPath, QObject *parent = 0);
     virtual ~DBusObjectWatcher();
     QString connectionName();
     bool isObjectAvailable();

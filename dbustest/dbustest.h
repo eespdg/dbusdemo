@@ -5,7 +5,7 @@
 #include "vehicle.h"
 #include <QMainWindow>
 #include <QDBusServer>
-#include <QDBusServiceWatcher>
+//#include <QDBusServiceWatcher>
 
 namespace Ui {
 class DBusTest;
@@ -42,7 +42,7 @@ private:
     Ui::DBusTest *ui;
     DBusClient* m_client;
     DBusObjectWatcher* m_watcher;
-    QDBusServiceWatcher* m_serviceWatcher;
+//    QDBusServiceWatcher* m_serviceWatcher;
     QDBusServer* m_server;
     Vehicle* m_vehicle;
 };

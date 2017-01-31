@@ -12,7 +12,7 @@ class DBusObjectWatcherPrivate : public QObject
     Q_DISABLE_COPY(DBusObjectWatcherPrivate)
 
 public:
-    DBusObjectWatcherPrivate(const QString& connectionName, const QString& objectPath, DBusObjectWatcher *parent);
+    DBusObjectWatcherPrivate(const QString& connectionName, const QString &serviceName, const QString& objectPath, DBusObjectWatcher *parent);
     virtual ~DBusObjectWatcherPrivate();
     void startWatching();
     void stopWatching();

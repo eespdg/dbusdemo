@@ -49,10 +49,10 @@ QDBusConnection DBusClient::connection()
     return QDBusConnection(d_ptr->m_connectionName);
 }
 
-DBusObjectWatcher *DBusClient::createObjectWatcher(const QString &objectPath)
+DBusObjectWatcher *DBusClient::createObjectWatcher(const QString &serviceName, const QString &objectPath)
 {
     Q_D(DBusClient);
-    DBusObjectWatcher* watcher = new DBusObjectWatcher(d->m_connectionName, objectPath, this);
+    DBusObjectWatcher* watcher = new DBusObjectWatcher(d->m_connectionName, serviceName, objectPath, this);
     connect(this, &DBusClient::connectedToServer, watcher, &DBusObjectWatcher::handleConnection);
     connect(this, &DBusClient::disconnectedFromServer, watcher, &DBusObjectWatcher::handleDisconnection);
     return watcher;

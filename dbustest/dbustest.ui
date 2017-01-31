@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>543</width>
-    <height>693</height>
+    <width>689</width>
+    <height>794</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>DBusTest</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
@@ -102,20 +102,13 @@
       <property name="title">
        <string>Consumer</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QCheckBox" name="cbConsume">
            <property name="text">
             <string>Consume Object</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="txtConsPath">
-           <property name="text">
-            <string>/Vehicle</string>
            </property>
           </widget>
          </item>
@@ -136,6 +129,38 @@
           <widget class="QLabel" name="lblConsStatus">
            <property name="text">
             <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Service:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="txtConsService">
+           <property name="text">
+            <string>com.barco.healthcare.drive</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Path:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="txtConsPath">
+           <property name="text">
+            <string>/Vehicle</string>
            </property>
           </widget>
          </item>
@@ -207,20 +232,13 @@
       <property name="title">
        <string>Provider</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QCheckBox" name="cbProvide">
            <property name="text">
             <string>Provide Object</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="txtProvPath">
-           <property name="text">
-            <string>/Vehicle</string>
            </property>
           </widget>
          </item>
@@ -261,6 +279,38 @@
           <widget class="QLabel" name="lblProvStatus">
            <property name="text">
             <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Service:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="txtProvService">
+           <property name="text">
+            <string>com.barco.healthcare.drive</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Path:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="txtProvPath">
+           <property name="text">
+            <string>/Vehicle</string>
            </property>
           </widget>
          </item>

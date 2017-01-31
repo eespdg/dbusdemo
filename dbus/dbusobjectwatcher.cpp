@@ -8,9 +8,9 @@
 #include <QDBusMessage>
 #include <QThread>
 
-DBusObjectWatcher::DBusObjectWatcher(const QString& connectionName, const QString& objectPath, QObject *parent)
+DBusObjectWatcher::DBusObjectWatcher(const QString& connectionName, const QString &serviceName, const QString& objectPath, QObject *parent)
     : QObject(parent)
-    , d_ptr(new DBusObjectWatcherPrivate(connectionName, objectPath, this))
+    , d_ptr(new DBusObjectWatcherPrivate(connectionName, serviceName, objectPath, this))
 {
 }
 
@@ -58,9 +58,10 @@ void DBusObjectWatcher::handleDisconnection()
     d->handleDisconnection();
 }
 
-DBusObjectWatcherPrivate::DBusObjectWatcherPrivate(const QString &connectionName, const QString &objectPath, DBusObjectWatcher *parent)
+DBusObjectWatcherPrivate::DBusObjectWatcherPrivate(const QString &connectionName, const QString &serviceName, const QString &objectPath, DBusObjectWatcher *parent)
     : QObject(parent)
     , q_ptr(parent)
+    , m_serviceName(serviceName)
     , m_objectPath(objectPath)
     , m_connectionName(connectionName)
     , m_enabled(false)
@@ -106,6 +107,11 @@ void DBusObjectWatcherPrivate::monitorConnection()
             qDebug() << "Disconnected from:" << m_connectionName << connection.lastError().message();
             handleDisconnection();
         }
+        else if (!connection.interface()->isServiceRegistered(m_serviceName))
+        {
+            qDebug() << "Remote service unregistered:" << m_serviceName;
+            handleDisconnection();
+        }
     }
 
     // try to connect to remote object
@@ -115,13 +121,18 @@ void DBusObjectWatcherPrivate::monitorConnection()
         QDBusConnection connection(m_connectionName);
         if (connection.isConnected())
         {
-            qDebug() << "Watcher connected to:" << m_connectionName;
-
-            const QDBusReply<QStringList> repl = connection.interface()->registeredServiceNames();
-            if (repl.isValid())
-                qDebug() << repl.value();
-            else
-                qDebug() << repl.error();
+//            const QDBusReply<QStringList> repl = connection.interface()->registeredServiceNames();
+//            if (repl.isValid())
+//            {
+//                const QStringList list = repl.value();
+//                qDebug() << list;
+//                if (list.contains(m_serviceName))
+//                    qDebug() << "SERVICE FOUND!";
+//            }
+//            else
+//            {
+//                qDebug() << repl.error();
+//            }
 
             if (connection.interface()->isServiceRegistered(m_serviceName))
             {
@@ -149,6 +160,7 @@ void DBusObjectWatcherPrivate::monitorConnection()
 
 void DBusObjectWatcherPrivate::handleConnection()
 {
+    qDebug() << "Watcher connected to:" << m_connectionName;
     monitorConnection();
 }
 
