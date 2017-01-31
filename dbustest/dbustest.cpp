@@ -7,15 +7,17 @@ DBusTest::DBusTest(QWidget *parent)
     , ui(new Ui::DBusTest)
     , m_client(new DBusClient("core", this))
     , m_watcher(Q_NULLPTR)
+    , m_serviceWatcher(Q_NULLPTR)
     , m_server(Q_NULLPTR)
     , m_vehicle(new Vehicle(this))
 {
     ui->setupUi(this);
 
     connect(m_client, &DBusClient::connectedToServer, this, &DBusTest::handleClientConnection);
-    connect(m_client, &DBusClient::disconnectedFromServer, this, &DBusTest::handleClientConnection);
+    connect(m_client, &DBusClient::disconnectedFromServer, this, &DBusTest::handleClientDisconnection);
 
     new VehicleInterfaceAdaptor(m_vehicle);
+
 }
 
 DBusTest::~DBusTest()
@@ -25,7 +27,7 @@ DBusTest::~DBusTest()
 
 void DBusTest::handleServerConnection(QDBusConnection connection)
 {
-    if (ui->cbProvide)
+    if (ui->cbProvide->isChecked())
     {
         connection.registerObject(ui->txtProvPath->text(), m_vehicle);
         connection.registerService("com.barco.healthcare.driving");
@@ -34,16 +36,29 @@ void DBusTest::handleServerConnection(QDBusConnection connection)
 
 void DBusTest::handleClientConnection()
 {
+    ui->plainTextEdit->appendPlainText("Connected");
     ui->lblConnStatus->setText("CONNECTED");
+    if (ui->cbProvide->isChecked())
+    {
+        QDBusConnection connection = m_client->connection();
+        connection.registerObject(ui->txtProvPath->text(), m_vehicle);
+        connection.registerService("com.barco.healthcare.driving");
+    }
+
+//    m_serviceWatcher = new QDBusServiceWatcher("com.barco.healthcare.driving", m_client->connection());
+//    connect(m_serviceWatcher, &QDBusServiceWatcher::serviceRegistered, this, &DBusTest::handleServiceRegistered);
+
 }
 
 void DBusTest::handleClientDisconnection()
 {
+    ui->plainTextEdit->appendPlainText("Disconnected");
     ui->lblConnStatus->setText("DISCONNECTED");
 }
 
 void DBusTest::handleObjectAdded()
 {
+    ui->plainTextEdit->appendPlainText("Object added");
     ui->lblConsStatus->setText("OBJECT ADDED");
 //    ui->lblConsStatus->setStyleSheet("border: 2px solid green;");
     ui->lblConsStatus->setStyleSheet("background-color: lightgreen;");
@@ -51,14 +66,21 @@ void DBusTest::handleObjectAdded()
 
 void DBusTest::handleObjectRemoved()
 {
+    ui->plainTextEdit->appendPlainText("Object removed");
     ui->lblConsStatus->setText("OBJECT REMOVED");
     ui->lblConsStatus->setStyleSheet("background-color: lightgray;");
+}
+
+void DBusTest::handleServiceRegistered()
+{
+    ui->plainTextEdit->appendPlainText("Service registered");
 }
 
 void DBusTest::on_btnConnect_clicked()
 {
     if (ui->btnConnect->text() == "Connect")
     {
+        ui->plainTextEdit->appendPlainText("Connecting...");
         ui->btnConnect->setText("Disconnect");
         ui->lblConnStatus->setText("CONNECTING");
 
@@ -91,6 +113,7 @@ void DBusTest::on_btnConnect_clicked()
     }
     else
     {
+        ui->plainTextEdit->appendPlainText("Disconnecting...");
         ui->btnConnect->setText("Connect");
         ui->lblConnStatus->setText("DISCONNECTING");
 
@@ -142,4 +165,14 @@ void DBusTest::on_cbConsume_clicked()
             deleteWatcher();
         }
     }
+}
+
+void DBusTest::on_btnTestCon_clicked()
+{
+    QDBusConnection::connectToBus(QDBusConnection::SystemBus, "pipi");
+}
+
+void DBusTest::on_btnTestDisconn_clicked()
+{
+    QDBusConnection::disconnectFromBus("pipi");
 }

@@ -76,7 +76,7 @@ void DBusClient::connectToBus(QDBusConnection::BusType busType)
 
 void DBusClient::disconnectFromServer()
 {
-    d_ptr->disconnectFromServer();
+    QMetaObject::invokeMethod(d_ptr, "disconnectFromServer", Qt::QueuedConnection);
 }
 
 DBusClientPrivate::DBusClientPrivate(const QString &connectionName, QObject *parent)

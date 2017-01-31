@@ -26,6 +26,7 @@ private:
 
 public:
     DBusObjectWatcher* q_ptr;
+    QString m_serviceName;
     QString m_objectPath; ///< watched object path, e.g. "/logger"
     QString m_connectionName; ///< connection name used, e.g. "coreservice"
     bool m_enabled;

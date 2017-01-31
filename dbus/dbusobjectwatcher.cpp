@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QDBusError>
 #include <QDBusMessage>
 #include <QThread>
@@ -116,16 +117,32 @@ void DBusObjectWatcherPrivate::monitorConnection()
         {
             qDebug() << "Watcher connected to:" << m_connectionName;
 
-            QDBusMessage reply = connection.call(QDBusMessage::createMethodCall("", m_objectPath, "", "DummyMethodWhichIsNotImplemented"));
-            qDebug() << "Reply:" << reply;
-            if (reply.errorName().contains("UnknownMethod"))
+            const QDBusReply<QStringList> repl = connection.interface()->registeredServiceNames();
+            if (repl.isValid())
+                qDebug() << repl.value();
+            else
+                qDebug() << repl.error();
+
+            if (connection.interface()->isServiceRegistered(m_serviceName))
             {
-                // 'UnknownMethod' error means that object exists,
-                // otherwise the error would be 'UnknownObject'
                 m_objectAvailable = true;
                 Q_Q(DBusObjectWatcher);
                 Q_EMIT q->objectAdded();
             }
+
+//            QDBusMessage reply = connection.call(QDBusMessage::createMethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames"));
+//            qDebug() << "Reply:" << reply;
+
+//            QDBusMessage reply = connection.call(QDBusMessage::createMethodCall("", m_objectPath, "", "DummyMethodWhichIsNotImplemented"));
+//            qDebug() << "Reply:" << reply;
+//            if (reply.errorName().contains("UnknownMethod"))
+//            {
+//                // 'UnknownMethod' error means that object exists,
+//                // otherwise the error would be 'UnknownObject'
+//                m_objectAvailable = true;
+//                Q_Q(DBusObjectWatcher);
+//                Q_EMIT q->objectAdded();
+//            }
         }
     }
 }

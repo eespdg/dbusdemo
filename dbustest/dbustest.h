@@ -5,6 +5,7 @@
 #include "vehicle.h"
 #include <QMainWindow>
 #include <QDBusServer>
+#include <QDBusServiceWatcher>
 
 namespace Ui {
 class DBusTest;
@@ -24,9 +25,14 @@ private slots:
     void handleClientDisconnection();
     void handleObjectAdded();
     void handleObjectRemoved();
+    void handleServiceRegistered();
     void on_btnConnect_clicked();
 
     void on_cbConsume_clicked();
+
+    void on_btnTestCon_clicked();
+
+    void on_btnTestDisconn_clicked();
 
 private:
     void disconnect();
@@ -36,6 +42,7 @@ private:
     Ui::DBusTest *ui;
     DBusClient* m_client;
     DBusObjectWatcher* m_watcher;
+    QDBusServiceWatcher* m_serviceWatcher;
     QDBusServer* m_server;
     Vehicle* m_vehicle;
 };

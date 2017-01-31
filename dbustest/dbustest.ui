@@ -61,12 +61,15 @@
          <property name="text">
           <string>Private Bus</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="2" column="1" colspan="3">
         <widget class="QLineEdit" name="txtPrivateBus">
          <property name="text">
-          <string>tcp:host=127.0.0.1,port=12345</string>
+          <string>tcp:host=127.0.0.1,port=54320</string>
          </property>
         </widget>
        </item>
@@ -326,6 +329,37 @@
     </item>
     <item>
      <widget class="QPlainTextEdit" name="plainTextEdit"/>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnTestCon">
+        <property name="text">
+         <string>Connect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnTestDisconn">
+        <property name="text">
+         <string>Disconnect</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
