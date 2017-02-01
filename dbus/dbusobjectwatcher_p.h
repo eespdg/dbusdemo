@@ -30,6 +30,7 @@ public:
     QString m_objectPath; ///< watched object path, e.g. "/logger"
     QString m_connectionName; ///< connection name used, e.g. "coreservice"
     bool m_enabled;
+    bool m_connected;
     bool m_objectAvailable; ///< remote object availability
     QTimer* m_timer;
 };

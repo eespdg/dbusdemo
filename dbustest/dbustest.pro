@@ -34,6 +34,7 @@ SOURCES += main.cpp\
         dbustest.cpp \
     ../dbus/dbusclient.cpp \
     ../dbus/dbusobjectwatcher.cpp \
+    ../dbus/dbusservicemonitor.cpp \
     vehicle.cpp
 
 HEADERS  += dbustest.h \
@@ -41,6 +42,8 @@ HEADERS  += dbustest.h \
     ../dbus/dbusclient_p.h \
     ../dbus/dbusobjectwatcher.h \
     ../dbus/dbusobjectwatcher_p.h \
+    ../dbus/dbusservicemonitor.h \
+    ../dbus/dbusservicemonitor_p.h \
     vehicle.h
 
 FORMS    += dbustest.ui

@@ -34,6 +34,8 @@ private slots:
 
     void on_btnTestDisconn_clicked();
 
+    void on_btnShow_clicked();
+
 private:
     void disconnect();
     void addWatcher();

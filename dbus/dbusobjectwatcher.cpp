@@ -161,6 +161,7 @@ void DBusObjectWatcherPrivate::monitorConnection()
 void DBusObjectWatcherPrivate::handleConnection()
 {
     qDebug() << "Watcher connected to:" << m_connectionName;
+    QDBusConnection connection(m_connectionName);
     monitorConnection();
 }
 

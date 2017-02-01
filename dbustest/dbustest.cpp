@@ -134,11 +134,14 @@ void DBusTest::disconnect()
 
 void DBusTest::addWatcher()
 {
-    deleteWatcher();
-    m_watcher = m_client->createObjectWatcher(ui->txtConsService->text(), ui->txtConsPath->text());
-    connect(m_watcher, &DBusObjectWatcher::objectAdded, this, &DBusTest::handleObjectAdded);
-    connect(m_watcher, &DBusObjectWatcher::objectRemoved, this, &DBusTest::handleObjectRemoved);
-    m_watcher->startWatching();
+//    deleteWatcher();
+//    m_watcher = m_client->createObjectWatcher(ui->txtConsService->text(), ui->txtConsPath->text());
+//    connect(m_watcher, &DBusObjectWatcher::objectAdded, this, &DBusTest::handleObjectAdded);
+//    connect(m_watcher, &DBusObjectWatcher::objectRemoved, this, &DBusTest::handleObjectRemoved);
+//    m_watcher->startWatching();
+
+    DBusServiceMonitor* monitor = m_client->createServiceMonitor(ui->txtConsService->text());
+    monitor->startWatching();
 }
 
 void DBusTest::deleteWatcher()
@@ -175,4 +178,33 @@ void DBusTest::on_btnTestCon_clicked()
 void DBusTest::on_btnTestDisconn_clicked()
 {
     QDBusConnection::disconnectFromBus("pipi");
+}
+
+void DBusTest::on_btnShow_clicked()
+{
+    QStringList msg("Registered services: ");
+    QDBusConnection conn = m_client->connection();
+    if (conn.isConnected())
+    {
+        const QDBusReply<QStringList> repl = conn.interface()->registeredServiceNames();
+        if (repl.isValid())
+        {
+            const QStringList list = repl.value();
+            qDebug() << list;
+            msg << list;
+            for (const QString& name : list)
+            {
+//                ui->plainTextEdit->appendPlainText(name);
+            }
+        }
+        else
+        {
+            qDebug() << repl.error();
+        }
+    }
+    else
+    {
+        msg << "Not connected!";
+    }
+    ui->plainTextEdit->appendPlainText(msg.join(" "));
 }

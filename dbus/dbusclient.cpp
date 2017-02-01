@@ -58,6 +58,17 @@ DBusObjectWatcher *DBusClient::createObjectWatcher(const QString &serviceName, c
     return watcher;
 }
 
+DBusServiceMonitor *DBusClient::createServiceMonitor(const QString &serviceName)
+{
+    Q_D(DBusClient);
+    DBusServiceMonitor* monitor = new DBusServiceMonitor(d->m_connectionName, serviceName, this);
+    connect(this, &DBusClient::connectedToServer, monitor,
+            &DBusServiceMonitor::handleConnection);
+    connect(this, &DBusClient::disconnectedFromServer, monitor,
+            &DBusServiceMonitor::handleDisconnection);
+    return monitor;
+}
+
 void DBusClient::connectToPeer(const QString &serverAddress)
 {
     QMetaObject::invokeMethod(d_ptr, "connectToPeer", Qt::QueuedConnection, Q_ARG(QString, serverAddress));

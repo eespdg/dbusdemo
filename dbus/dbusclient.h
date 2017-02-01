@@ -2,6 +2,7 @@
 #define DBUSCLIENT_H
 
 #include "dbusobjectwatcher.h"
+#include "dbusservicemonitor.h"
 #include <QObject>
 #include <QDBusConnection>
 #include <QScopedPointer>
@@ -22,6 +23,7 @@ public:
     bool isConnected();
     QDBusConnection connection();
     DBusObjectWatcher* createObjectWatcher(const QString &serviceName, const QString& objectPath);
+    DBusServiceMonitor *createServiceMonitor(const QString &serviceName);
 
 public Q_SLOTS:
     void connectToPeer(const QString& serverAddress);
