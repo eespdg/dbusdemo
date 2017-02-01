@@ -148,6 +148,9 @@
            <property name="text">
             <string>com.barco.healthcare.drive</string>
            </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
@@ -169,7 +172,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QSpinBox" name="btnConsSpeed">
+          <widget class="QSpinBox" name="numConsSpeed">
            <property name="minimum">
             <number>-1000000</number>
            </property>

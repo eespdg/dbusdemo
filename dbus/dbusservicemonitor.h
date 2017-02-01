@@ -14,7 +14,8 @@ class DBusServiceMonitor : public QObject
 public:
     explicit DBusServiceMonitor(const QString& connectionName, const QString& serviceName, QObject *parent = 0);
     virtual ~DBusServiceMonitor();
-    bool isServiceAvailable();
+    QString serviceName() const;
+    bool isServiceAvailable() const;
 
 public Q_SLOTS:
     void startWatching();

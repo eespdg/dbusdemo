@@ -7,17 +7,51 @@ DBusTest::DBusTest(QWidget *parent)
     , ui(new Ui::DBusTest)
     , m_client(new DBusClient("core", this))
     , m_watcher(Q_NULLPTR)
-//    , m_serviceWatcher(Q_NULLPTR)
+    , m_serviceMonitor(Q_NULLPTR)
     , m_server(Q_NULLPTR)
     , m_vehicle(new Vehicle(this))
+    , m_vehicleProxy(Q_NULLPTR)
 {
     ui->setupUi(this);
 
     connect(m_client, &DBusClient::connectedToServer, this, &DBusTest::handleClientConnection);
     connect(m_client, &DBusClient::disconnectedFromServer, this, &DBusTest::handleClientDisconnection);
 
+    m_serviceMonitor = m_client->createServiceMonitor(ui->txtConsService->text());
+    connect(m_serviceMonitor, &DBusServiceMonitor::serviceAcquired, this, &DBusTest::handleServiceAdded);
+    connect(m_serviceMonitor, &DBusServiceMonitor::serviceLost, this, &DBusTest::handleServiceRemoved);
+
     new VehicleInterfaceAdaptor(m_vehicle);
 
+
+    // //////////// provider controls //////////////// //
+
+    connect(m_vehicle, &Vehicle::speedChanged, ui->numProvSpeed, &QSpinBox::setValue);
+
+    connect(ui->btnProvAcc, &QPushButton::clicked, [this](){
+        m_vehicle->accelerate();
+    });
+    connect(ui->btnProvDec, &QPushButton::clicked, [this](){
+        m_vehicle->decelerate();
+    });
+    connect(ui->btnProvSet, &QPushButton::clicked, [this](){
+        m_vehicle->setSpeed(ui->numProvSet->value());
+    });
+
+    // //////////// consumer controls //////////////// //
+
+    connect(ui->btnConsAcc, &QPushButton::clicked, [this](){
+        if (m_vehicleProxy)
+            m_vehicleProxy->accelerate();
+    });
+    connect(ui->btnConsDec, &QPushButton::clicked, [this](){
+        if (m_vehicleProxy)
+            m_vehicleProxy->decelerate();
+    });
+    connect(ui->btnConsSet, &QPushButton::clicked, [this](){
+        if (m_vehicleProxy)
+            m_vehicleProxy->setSpeed(ui->numConsSet->value());
+    });
 }
 
 DBusTest::~DBusTest()
@@ -56,6 +90,31 @@ void DBusTest::handleClientDisconnection()
     ui->lblConnStatus->setText("DISCONNECTED");
 }
 
+void DBusTest::handleServiceAdded()
+{
+    ui->plainTextEdit->appendPlainText("Service added");
+    ui->lblConsStatus->setText("SERVICE ADDED");
+//    ui->lblConsStatus->setStyleSheet("border: 2px solid green;");
+    ui->lblConsStatus->setStyleSheet("background-color: lightgreen;");
+
+    Q_ASSERT(m_vehicleProxy == Q_NULLPTR);
+    m_vehicleProxy = new org::example::VehicleInterface(m_serviceMonitor->serviceName(), ui->txtConsPath->text(), m_client->connection());
+    connect(m_vehicleProxy, &org::example::VehicleInterface::speedChanged, ui->numConsSpeed, &QSpinBox::setValue);
+}
+
+void DBusTest::handleServiceRemoved()
+{
+    ui->plainTextEdit->appendPlainText("Service removed");
+    ui->lblConsStatus->setText("SERVICE REMOVED");
+    ui->lblConsStatus->setStyleSheet("background-color: lightgray;");
+
+    if(m_vehicleProxy)
+    {
+        delete m_vehicleProxy;
+        m_vehicleProxy = Q_NULLPTR;
+    }
+}
+
 void DBusTest::handleObjectAdded()
 {
     ui->plainTextEdit->appendPlainText("Object added");
@@ -86,7 +145,7 @@ void DBusTest::on_btnConnect_clicked()
 
         if (ui->cbConsume->isChecked())
         {
-            addWatcher();
+            addConsumer();
         }
 
         if (ui->rbSystemBus->isChecked())
@@ -124,7 +183,7 @@ void DBusTest::on_btnConnect_clicked()
 void DBusTest::disconnect()
 {
     m_client->disconnectFromServer();
-    deleteWatcher();
+    deleteConsumer();
     if (m_server)
     {
         delete m_server;
@@ -132,7 +191,7 @@ void DBusTest::disconnect()
     }
 }
 
-void DBusTest::addWatcher()
+void DBusTest::addConsumer()
 {
 //    deleteWatcher();
 //    m_watcher = m_client->createObjectWatcher(ui->txtConsService->text(), ui->txtConsPath->text());
@@ -140,18 +199,14 @@ void DBusTest::addWatcher()
 //    connect(m_watcher, &DBusObjectWatcher::objectRemoved, this, &DBusTest::handleObjectRemoved);
 //    m_watcher->startWatching();
 
-    DBusServiceMonitor* monitor = m_client->createServiceMonitor(ui->txtConsService->text());
-    monitor->startWatching();
+    deleteConsumer();
+
+    m_serviceMonitor->startWatching();
 }
 
-void DBusTest::deleteWatcher()
+void DBusTest::deleteConsumer()
 {
-    if (m_watcher)
-    {
-        m_watcher->stopWatching();
-        delete m_watcher;
-        m_watcher = Q_NULLPTR;
-    }
+    m_serviceMonitor->stopWatching();
 }
 
 void DBusTest::on_cbConsume_clicked()
@@ -161,11 +216,11 @@ void DBusTest::on_cbConsume_clicked()
         // we are connected
         if (ui->cbConsume->isChecked())
         {
-            addWatcher();
+            addConsumer();
         }
         else
         {
-            deleteWatcher();
+            deleteConsumer();
         }
     }
 }
@@ -208,3 +263,4 @@ void DBusTest::on_btnShow_clicked()
     }
     ui->plainTextEdit->appendPlainText(msg.join(" "));
 }
+

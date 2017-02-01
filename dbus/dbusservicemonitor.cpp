@@ -15,9 +15,15 @@ DBusServiceMonitor::~DBusServiceMonitor()
 
 }
 
-bool DBusServiceMonitor::isServiceAvailable()
+QString DBusServiceMonitor::serviceName() const
 {
-    Q_D(DBusServiceMonitor);
+    const Q_D(DBusServiceMonitor);
+    return d->m_serviceName;
+}
+
+bool DBusServiceMonitor::isServiceAvailable() const
+{
+    const Q_D(DBusServiceMonitor);
     return d->m_serviceReported;
 }
 

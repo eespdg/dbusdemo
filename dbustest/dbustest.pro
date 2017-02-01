@@ -27,7 +27,7 @@ INCLUDEPATH += ../common ../dbus
 DBUS_ADAPTORS += \
     ../common/vehicle.xml
 
-DBUS_PROXIES += \
+DBUS_INTERFACES += \
     ../common/vehicle.xml
 
 SOURCES += main.cpp\
