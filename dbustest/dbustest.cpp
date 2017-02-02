@@ -247,10 +247,6 @@ void DBusTest::on_btnShow_clicked()
             const QStringList list = repl.value();
             qDebug() << list;
             msg << list;
-            for (const QString& name : list)
-            {
-//                ui->plainTextEdit->appendPlainText(name);
-            }
         }
         else
         {
