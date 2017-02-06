@@ -71,9 +71,9 @@ void ServerMainWindow::handleClientConnection(QDBusConnection connection)
         registerObjects(connection);
     });
 
-//    registerObjects(connection);
+    registerObjects(connection);
 
-//    m_dBusMonitor.registerForConnection(connection);
+    m_dBusMonitor.registerForConnection(connection);
 }
 
 void ServerMainWindow::registerObjects(QDBusConnection connection)
